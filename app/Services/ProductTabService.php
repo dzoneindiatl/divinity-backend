@@ -30,27 +30,15 @@ class ProductTabService
         $product->main_category_id          = $data['main_category_id'];
         $product->main_sub_category_id      = $data['main_sub_category_id'] ?? null;
         $product->main_child_category_id    = $data['main_child_cate_id'] ?? null;
-
         $product->save();
-
-        return $product;
-    }
-
-    public function step2(array $data)
-    {
-        $productId = $data['product_id'];
+        $productId = $product->id ;  
 
         \DB::transaction(function () use ($data, $productId) {
 
-            $incomingVariants = $data['variant'] ?? [];
-            $incomingVariantValues = $data['variant_values'] ?? [];
-
+            $incomingVariants = $data['variant'] ?? []; 
             $existingVariants = ProductVariant::where('product_id', $productId)->get()->keyBy('variant_id');
-
             $existingValues = ProductVariantValue::where('product_id', $productId)->get();
-
             $incomingVariantIds = collect($incomingVariants)->unique()->values();
-
             $incomingValueMap = collect();
 
             foreach ($incomingVariants as $i => $variantId) {
@@ -60,13 +48,12 @@ class ProductTabService
                 ]);
 
                 $incomingValueIds = collect($data['variant_values'][$i])->map(fn($v) => (int) $v)->unique()->values();
-
                 $incomingValueMap->push([
                     'variant_id' => $variantId,
                     'product_variant_id' => $variantModel->id,
                     'values' => $incomingValueIds
                 ]);
-
+          
                 foreach ($incomingValueIds as $valueId) {
                     $exists = $existingValues->firstWhere(function ($val) use ($variantModel, $valueId) {
                         return $val->product_variant_id == $variantModel->id && $val->variant_value_id == $valueId;
@@ -82,7 +69,6 @@ class ProductTabService
                 }
             }
 
-            // Now delete ProductVariantValues not in new input
             $validProductVariantIds = $incomingValueMap->pluck('product_variant_id')->toArray();
             $validValueCombos = $incomingValueMap->flatMap(function ($row) {
                 return $row['values']->map(fn($v) => $row['product_variant_id'] . '|' . $v);
@@ -95,16 +81,13 @@ class ProductTabService
                 }
             }
 
-            // Delete variants not in new input
             foreach ($existingVariants as $variantId => $variant) {
                 if (!$incomingVariantIds->contains($variantId)) {
                     $variant->delete();
                 }
             }
 
-            // Generate combinations (same as before)
             $variantValueMap = $data['variant_values'] ?? [];
-
             $uniqueGroups = collect($variantValueMap)->unique(function ($item) {
                 return implode('_', $item);
             })->values()->toArray();
@@ -144,12 +127,127 @@ class ProductTabService
             }
 
             $newJsonCombos = collect($combinations)->map(fn($combo) => json_encode(array_map('intval', $combo)))->toArray();
-
             ProductVariantCombination::where('product_id', $productId)
                 ->whereNotIn('combination_id', $newJsonCombos)
                 ->delete();
-            });
+        });
+        return $product;
     }
+
+    // public function step2(array $data)
+    // {
+    //     $productId = $data['product_id'];
+
+    //     \DB::transaction(function () use ($data, $productId) {
+
+    //         $incomingVariants = $data['variant'] ?? [];
+    //         $incomingVariantValues = $data['variant_values'] ?? [];
+
+    //         $existingVariants = ProductVariant::where('product_id', $productId)->get()->keyBy('variant_id');
+
+    //         $existingValues = ProductVariantValue::where('product_id', $productId)->get();
+
+    //         $incomingVariantIds = collect($incomingVariants)->unique()->values();
+
+    //         $incomingValueMap = collect();
+
+    //         foreach ($incomingVariants as $i => $variantId) {
+    //             $variantModel = $existingVariants[$variantId] ?? ProductVariant::create([
+    //                 'product_id' => $productId,
+    //                 'variant_id' => $variantId
+    //             ]);
+
+    //             $incomingValueIds = collect($data['variant_values'][$i])->map(fn($v) => (int) $v)->unique()->values();
+
+    //             $incomingValueMap->push([
+    //                 'variant_id' => $variantId,
+    //                 'product_variant_id' => $variantModel->id,
+    //                 'values' => $incomingValueIds
+    //             ]);
+
+    //             foreach ($incomingValueIds as $valueId) {
+    //                 $exists = $existingValues->firstWhere(function ($val) use ($variantModel, $valueId) {
+    //                     return $val->product_variant_id == $variantModel->id && $val->variant_value_id == $valueId;
+    //                 });
+
+    //                 if (!$exists) {
+    //                     ProductVariantValue::create([
+    //                         'product_variant_id' => $variantModel->id,
+    //                         'variant_value_id'   => $valueId,
+    //                         'product_id'         => $productId
+    //                     ]);
+    //                 }
+    //             }
+    //         }
+
+    //         // Now delete ProductVariantValues not in new input
+    //         $validProductVariantIds = $incomingValueMap->pluck('product_variant_id')->toArray();
+    //         $validValueCombos = $incomingValueMap->flatMap(function ($row) {
+    //             return $row['values']->map(fn($v) => $row['product_variant_id'] . '|' . $v);
+    //         })->toArray();
+
+    //         foreach ($existingValues as $value) {
+    //             $key = $value->product_variant_id . '|' . $value->variant_value_id;
+    //             if (!in_array($key, $validValueCombos)) {
+    //                 $value->delete();
+    //             }
+    //         }
+
+    //         // Delete variants not in new input
+    //         foreach ($existingVariants as $variantId => $variant) {
+    //             if (!$incomingVariantIds->contains($variantId)) {
+    //                 $variant->delete();
+    //             }
+    //         }
+
+    //         // Generate combinations (same as before)
+    //         $variantValueMap = $data['variant_values'] ?? [];
+
+    //         $uniqueGroups = collect($variantValueMap)->unique(function ($item) {
+    //             return implode('_', $item);
+    //         })->values()->toArray();
+
+    //         $combinations = $this->cartesianProduct($uniqueGroups);
+
+    //         foreach ($combinations as $combo) {
+               
+    //           $valueIds = array_map('intval', $combo);
+              
+    //             $jsonCombo = json_encode($valueIds);   
+
+    //             $existing = ProductVariantCombination::where('product_id', $productId)
+    //             ->where('combination_id', $jsonCombo) 
+    //             ->first();
+
+    //             if ($existing) continue;
+                 
+    //             $values = collect($valueIds)
+    //                 ->map(function ($id) {
+    //                     return \App\Models\VariantValue::find($id);
+    //                 })
+    //                 ->filter();
+
+    //                 $name = $values->pluck('name')->implode(' ');
+    //                 $sku  = strtolower($values->pluck('name')->implode('_'));
+
+    //                 ProductVariantCombination::create([
+    //                     'product_id'     => $productId,
+    //                     'sku'            => $sku,
+    //                     'combination_id' => json_encode($valueIds),
+    //                     'name'           => $name,
+    //                     'selling_price'  => 0.0,
+    //                     'price'          => 0.0,
+    //                     'qty'            => 0,
+    //                 ]);
+    //         }
+
+    //         $newJsonCombos = collect($combinations)->map(fn($combo) => json_encode(array_map('intval', $combo)))->toArray();
+
+    //         ProductVariantCombination::where('product_id', $productId)
+    //             ->whereNotIn('combination_id', $newJsonCombos)
+    //             ->delete();
+    //         });
+    // }
 
     private function cartesianProduct($arrays)
     {
@@ -316,8 +414,12 @@ class ProductTabService
         for ($i = 0; $i < $totalCombinations; $i++) {
             $product_sku = strtolower(str_replace(' ', '', $data['sku']));
             $varient_sku = strtolower(str_replace(' ', '', $data['variant_sku'][$i]));
-            $varient_sku = strtolower(str_replace($data['sku'].'_', '', $varient_sku));
-            $sku         = $product_sku.'_'.$varient_sku;
+            $prefix = $product_sku.'_'; 
+            if (str_starts_with($varient_sku, $prefix)) {
+                $sku = $varient_sku;
+            } else {
+                $sku = $product_sku . '_' . $varient_sku;
+            }
             
             $combo       = $data['combo'][$i] ?? '';
             $price       = $data['variant_price'][$i] ?? 0;
@@ -393,45 +495,95 @@ class ProductTabService
         $folder_path = strtoupper(date('M') . date('Y')) . "/";
         $imagePath = config('constant.PRODUCT_IMAGE_ROOT_PATH').$folder_path;
 
-        foreach ($data['product_crop_images'] ?? [] as $primaryId => $files) {
-            ProductGraphics::where('variant_id', $primaryId)->where('product_id', $product->id)->update(['is_front' => 0,'is_back' => 0,'is_variant_icon' => 0 ]);
+        foreach ($data['variant_images'] ?? [] as $primaryId => $files) {
+            ProductGraphics::where('variant_id', $primaryId)
+                ->where('product_id', $product->id)
+                ->update([
+                    'is_front'        => 0,
+                    'is_back'         => 0,
+                    'is_variant_icon' => 0
+                ]);
 
             foreach ($files as $index => $file) {
-                if (!$file) {
+
+                if (!$file || !$file->isValid()) {
                     continue;
                 }
 
-                $name = uniqid("variant_{$primaryId}_") . '.jpg';
-                // Ensure directory exists
+                $name = uniqid("variant_{$primaryId}_") . '.webp';
+
                 if (!file_exists($imagePath)) {
                     mkdir($imagePath, 0755, true);
                 }
 
-                //$file->move($imagePath, $name);
+                $sourcePath = $file->getPathname();
+                $extension = strtolower($file->getClientOriginalExtension());
 
-                $image = str_replace(
-                    'data:image/jpeg;base64,',
-                    '',
-                    $file
+                switch ($extension) {
+
+                    case 'jpg':
+                    case 'jpeg':
+                        $sourceImage = imagecreatefromjpeg($sourcePath);
+                        break;
+
+                    case 'png':
+                        $sourceImage = imagecreatefrompng($sourcePath);
+
+                        // Preserve transparency
+                        imagepalettetotruecolor($sourceImage);
+                        imagealphablending($sourceImage, false);
+                        imagesavealpha($sourceImage, true);
+                        break;
+
+                    case 'gif':
+                        $sourceImage = imagecreatefromgif($sourcePath);
+
+                        // Preserve transparency
+                        imagepalettetotruecolor($sourceImage);
+                        imagealphablending($sourceImage, false);
+                        imagesavealpha($sourceImage, true);
+                        break;
+
+                    case 'webp':
+                        $sourceImage = imagecreatefromwebp($sourcePath);
+                        break;
+
+                    default:
+                        continue 2;
+                }
+
+                if (!$sourceImage) {
+                    continue;
+                }
+
+                // Convert and save as WebP
+                imagewebp(
+                    $sourceImage,
+                    $imagePath . DIRECTORY_SEPARATOR . $name,
+                    85
                 );
 
-                $image = base64_decode($image);
-
-                file_put_contents(
-                    $imagePath.$name,
-                    $image
-                );
-
+                // Free memory
+                imagedestroy($sourceImage);
                 ProductGraphics::create([
-                    'product_id'   => $product->id,
-                    'variant_id'   => $primaryId, // IN case of simple product product id = varient id
-                    'product_type' => 'variant_group',
-                    'graphic_type' => "image",
-                    'graphic'      => $folder_path.$name,
-                    'status'       => 1,
-                    'is_front'     => isset($data['front_image'][$primaryId]) && $data['front_image'][$primaryId] == "{$primaryId}-{$index}" ? 1 : 0,
-                    'is_back'      => isset($data['back_image'][$primaryId]) && $data['back_image'][$primaryId] == "{$primaryId}-{$index}" ? 1 : 0,
-                    'is_variant_icon' => isset($data['variant_icon'][$primaryId]) && $data['variant_icon'][$primaryId] == "{$primaryId}-{$index}" ? 1 : 0,
+                    'product_id'       => $product->id,
+                    'variant_id'       => $primaryId,
+                    'product_type'     => 'variant_group',
+                    'graphic_type'     => 'image',
+                    'graphic'          => $folder_path . $name,
+                    'status'           => 1,
+
+                    'is_front' => isset($data['front_image'][$primaryId])
+                        && $data['front_image'][$primaryId] == "{$primaryId}-{$index}"
+                        ? 1 : 0,
+
+                    'is_back' => isset($data['back_image'][$primaryId])
+                        && $data['back_image'][$primaryId] == "{$primaryId}-{$index}"
+                        ? 1 : 0,
+
+                    'is_variant_icon' => isset($data['variant_icon'][$primaryId])
+                        && $data['variant_icon'][$primaryId] == "{$primaryId}-{$index}"
+                        ? 1 : 0,
                 ]);
             }
         }

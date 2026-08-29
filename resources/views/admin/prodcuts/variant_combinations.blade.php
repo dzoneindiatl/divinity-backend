@@ -80,7 +80,7 @@
             @endphp
             <div class="col">
                 {{-- Image Previews --}}
-                <div class="image-thumbnails-1 d-flex flex-wrap gap-2 mb-2 mt-2">
+                <div class="image-thumbnails-{{ $primaryId }} d-flex flex-wrap gap-2 mb-2 mt-2">
                     @foreach($images as $k=>$image)
                     @php
                         $frontCheck = !empty($image['is_front'])? "checked":"";
@@ -112,7 +112,7 @@
                     @endforeach
                 </div>
 
-                <div class="image-thumbnails d-flex flex-wrap gap-2 mb-2 mt-2">
+                <div class="image-thumbnails d-flex flex-wrap gap-2 mb-2 mt-2" id="image-thumbnails-{{ $primaryId }}">
                 </div>
 
                 {{-- Video Previews --}}

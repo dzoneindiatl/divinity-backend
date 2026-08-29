@@ -8,5 +8,5 @@
         reserved
     </span> -->
     <!-- <span class="text-dark fw-semibold">{{Config("Site.copyright")}}</span> -->
-    <span class="text-dark fw-semibold">© 8thniqjewells Made with  by DZone India</span>
+    <span class="text-dark fw-semibold">© Divinity Jewels Made with  by DZone India</span>
 </div>

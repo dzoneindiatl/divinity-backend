@@ -5,7 +5,6 @@
                 <input type="hidden" id="product_id" value="{{ $product->id }}">
             @endif
 
-            {{-- Product Type --}}
             <div class="mb-3">
                 <label class="form-label">Product Type <span class="text-danger">*</span></label>
                 <select class="form-control select2 @error('product_type') is-invalid @enderror product_type_selectbox"
@@ -99,14 +98,15 @@
             {{-- Child Category --}}
             <div class="mb-3 childCategoryHide d-none">
                 <label class="form-label">Child Category <span class="text-danger">*</span></label>
-                <select name="main_child_cate_id" id="prdct_child_category_id"
-                        class="form-control select2">
+                <select name="main_child_cate_id" id="prdct_child_category_id" class="form-control select2" onchange="getVariantData()">
                     <option value="">Select Child Category</option>
                 </select>
             </div>
 
+            <div id="variantContainer"></div> 
+
             <div class="mb-3 text-end">
-                <button type="button" class="btn btn-primary nextBtn" id="nextBtn" onclick="submitProduct()">
+                <button type="button" class="btn btn-primary nextBtn" id="nextBtn" onclick="submitProduct();">
                     <span class="btn-text">Save & Continue</span>
                 </button>
             </div>
@@ -133,11 +133,11 @@
 <script>
 (function () {
     // Active step 1 linktab &  stepdiv 
-    $(".tab-pane").removeClass("active");
-    $("#tab1").addClass("active");
+    // $(".tab-pane").removeClass("active");
+    // $("#tab1").addClass("active");
 
-    $(".nav-link").removeClass("active");
-    $('#step1').addClass("active");
+    // $(".nav-link").removeClass("active");
+    // $('#step1').addClass("active");
 
     // Guard against redeclaration
     window.selectorsData = window.selectorsData || {
@@ -183,30 +183,19 @@
 
     window.populateSelect = function(selector, items, placeholder = "Select", selectedId = null) {
         const $el = $(selector);
-
-        // 1. Destroy Select2 if initialized
         if ($el.data('select2')) {
             $el.select2('destroy');
         }
-
-    
         let html = `<option value="">${placeholder}</option>`;
-
-        
         items.forEach(item => {
             if (item.id && item.name) { // ✅ Only include valid options
                 const selected = (parseInt(selectedId) === parseInt(item.id)) ? 'selected' : '';
                 html += `<option value="${item.id}" ${selected}>${item.name}</option>`;
             }
         });
-
-     
-        
-        // 3. Set options and reinitialize Select2
         $el.html(html);
         $el.select2({ width: '100%', placeholder });
     };
-
 
     window.loadSubCategories = function() {
         const catId = $(selectorsData.main).val();
@@ -241,16 +230,57 @@
             if (res.success && res.childcat.length) {
                 populateSelect(selectorsData.child, res.childcat, "Child Category", preselected.child);
                 $('.childCategoryHide').removeClass('d-none');
+                if (preselected.child) {
+                    getVariantData();
+                }
             } else {
                 $('.childCategoryHide').addClass('d-none');
                 populateSelect(selectorsData.child, [], "Child Category");
+                getVariantData();
             }
         });
+    }
+
+    window.getVariantData = function() {
+        var subchildCategory = $('#prdct_child_category_id').val();
+        var productType = $('#product_type').val(); 
+        const $btn = $('.nextBtn'); 
+        const originalHtml = $btn.html(); 
+        const formData = {
+             _token: '{{ csrf_token() }}',
+            product_type: $('#product_type').val(),
+            main_category_id: $('#prdct_category_id').val(),
+            main_sub_category_id: $('#prdct_sub_category_id').val(),
+            main_child_cate_id : subchildCategory
+        }; 
+        const productId = $('#product_id').val();
+        if (productId) {
+            formData.product_id = productId;
+        }
+
+        if(productType == 2){
+            $.ajax({
+                url:'{{ route("admin-product-get-variant-record") }}', 
+                method:"POST", 
+                dataType:'json',
+                data:formData, 
+                success:function(response){
+                    console.log(response); 
+                    if(response.success){
+                         $('#variantContainer').html(response.html); 
+                    }
+                },
+                error:function(err){
+                    console.log(err); 
+                }
+            }); 
+        }
     }
 
     window.submitProduct = function() {
         const $btn = $('.nextBtn');
         const originalHtml = $btn.html();
+        const formData = new FormData();
 
         if($('#prdct_category_id').val() !=''){
             var main_category_id = $('#prdct_category_id').val();
@@ -258,16 +288,26 @@
             var main_category_id = $('#prdct_collection_id').val();
         }
 
-        const formData = {
-            _token: '{{ csrf_token() }}',
-            product_type: $('#product_type').val(),
-            category_collection: $('#category_collection').val(),
-            main_category_id: main_category_id,
-            main_sub_category_id: $('#prdct_sub_category_id').val(),
-            main_child_cate_id: $('#prdct_child_category_id').val(),
-        };
+        formData.append('_token', '{{ csrf_token() }}');
+        formData.append('product_type', $('#product_type').val());
+        formData.append('category_collection',$('#category_collection').val());
+        formData.append('main_category_id', main_category_id);
+        formData.append('main_sub_category_id', $('#prdct_sub_category_id').val());
+        formData.append('main_child_cate_id', $('#prdct_child_category_id').val());
+        var variantSelected = false;
+        
+        $('.variant-card').each((i, el) => {
+            const variantId = $(el).find('.variantSelect').val();
+            const values = $(el).find('.variantValuesSelect').val() || [];
+            if (variantId) {  
+                variantSelected = true;          
+                formData.append(`variant[${i}]`, variantId);
+                values.forEach(v => formData.append(`variant_values[${i}][]`, v));
+            }
+        });
 
         const productId = $('#product_id').val();
+
         if (productId) {
             formData.product_id = productId;
         }
@@ -276,8 +316,9 @@
             url: '{{ route("admin-product-save.step1") }}',
             method: 'POST',
             data: formData,
+            processData: false,
+            contentType: false,
 
-            // 🔽 BEFORE AJAX SEND
             beforeSend: function () {
                 $btn.prop('disabled', true).html(`
                     <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
@@ -285,38 +326,28 @@
                 `);
             },
 
-            // 🔽 ON SUCCESS
             success: function (res) {
-                if (res.success && res.step==2) {
+                if (res.success) {
                     $('#tab2').html(res.varient);
-                } else if (res.success && res.step==3) {
-                    $('#tab3').html(res.mainView);
-                } else if (res.success && res.step==4) {
-                    $('#tab4').html(res.seoView);
                 } else {
                     alert(res.message || "Something went wrong");
                 }
             },
 
-            // 🔽 ON ERROR
             error: function (xhr) {
                 console.error(xhr.responseText);
                 alert("Validation error or server error");
             },
 
-            // 🔽 ALWAYS RUN (AFTER success/error)
             complete: function () {
                 $btn.prop('disabled', false).html(originalHtml);
             }
         });
     }
 
-    
-
     $(document).ready(() => {
         initSelect2(true);
 
-        console.log($(selectorsData.main).val());
         if ($(selectorsData.main).val()) {
             loadSubCategories();
         }
@@ -350,14 +381,14 @@
 
         
 
-       $('.modal').on('shown.bs.modal', function () {
-        setTimeout(() => {
-            initSelect2(true);
-            if ($(selectorsData.main).val()) {
-                loadSubCategories(); // Also run on modal open
-            }
-        }, 100);
-    });
+        $('.modal').on('shown.bs.modal', function () {
+            setTimeout(() => {
+                initSelect2(true);
+                if ($(selectorsData.main).val()) {
+                    loadSubCategories();
+                }
+            }, 100);
+        });
     });
 })();
 </script>

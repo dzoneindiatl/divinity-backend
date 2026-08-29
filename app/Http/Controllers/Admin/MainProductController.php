@@ -48,16 +48,44 @@ class MainProductController extends Controller
 
 
 
-    public function addNewProduct(Request $request, $token = null)
-    {
-        $product = [];
-        if ($token) {
-            $id = decrypt($token);
-            $product = Product::FindOrFail($id);
-        }
-        $categories = Category::where('is_deleted', 0)->whereNull('parent_id')->get();
-        return view('admin.prodcuts.add-new-product', compact('categories', "product"));
+   public function addNewProduct(Request $request, $token = null)
+{
+    info('STEP 1', [
+        'token' => $token,
+    ]);
+
+    $product = [];
+
+    if ($token) {
+
+        info('STEP 2 - Before decrypt');
+
+        $id = decrypt($token);
+
+        info('STEP 3 - After decrypt', [
+            'id' => $id,
+        ]);
+
+        $product = Product::findOrFail($id);
+
+        info('STEP 4 - After product', [
+            'product_id' => $product->id,
+        ]);
     }
+
+    info('STEP 5 - Before categories');
+
+    $categories = Category::where('is_deleted', 0)
+        ->whereNull('parent_id')
+        ->get();
+
+    info('STEP 6 - After categories');
+
+    return view(
+        'admin.prodcuts.add-new-product',
+        compact('categories', 'product')
+    );
+}
 
     /**
      * Methode :- POST
@@ -67,51 +95,27 @@ class MainProductController extends Controller
      */
 
     public function saveStep1(ProductStep1 $request, ProductTabService $service)
-    {
-
+    { 
         $product = $service->step1($request->all());
-        
-        // return response()->json([
-        //     'success' => true,
-        //     'product_id' => $product->id,
-        //     'varient' => $this->previousStep2($product->id, $request?->product_type),
-        //     'message' => 'Step 1 saved successfully.',
-        // ]);
-        
-        if(@$request->product_type ==1){
-            return response()->json([
-                'success' => true,
-                'product_id' => $product->id,
-                'mainView' => $this->previousStep3($product->id),
-                'message' => 'Step 2 skipped successfully.',
-                'step' => '3'
-            ]);
-        } else {  
-            return response()->json([
-                'success' => true,
-                'product_id' => $product->id,
-                'varient' => $this->previousStep2($product->id, $request?->product_type),
-                'message' => 'Step 1 saved successfully.',
-                'step' => '2'
-            ]);
-        }
-
+        return response()->json([
+            'success' => true,
+            'product_id' => $product->id,
+            'varient' => $this->previousStep3($product->id),
+            'message' => 'Step 1 saved successfully.',
+        ]);
     }
 
-
-    public function previousStep2($productId, $product_type = null)
-    {
-        $product = Product::findOrFail($productId);
-        $productId = $product->id;
-        $variants = CategoryVariant::with('variant:id,name')
-            ->where('category_id', $product->main_category_id)
+    public function getProductCategoryVariant(Request $request){ 
+        $product_type = $request->product_type; 
+        $productId = $request->product_id; 
+        $variantsData = CategoryVariant::with('variant:id,name')
+            ->where('category_id', $request->main_category_id)
             ->get()
             ->pluck('variant')
             ->unique('id')
             ->values();
-
-
-        $selectedVariants = ProductVariant::where('product_id', $productId)
+        
+            $selectedVariants = ProductVariant::where('product_id', $productId)
             ->with('variantValues')
             ->get()
             ->map(function ($pv) {
@@ -120,28 +124,25 @@ class MainProductController extends Controller
                     'variant_values' => $pv->variantValues->pluck('variant_value_id')->toArray()
                 ];
             });
+           
+            $html = view('modals.products.create_variant_combined', [
+                'variantsData' => $variantsData,
+                'product_id' => $productId,
+                'product_type' => $product_type,
+                "selectedVariants" => $selectedVariants,
+            ])->render();
 
-        return $variantView = view('modals.products.create_variant_combined', [
-            'variantsData' => $variants,
-            'product_id' => $productId,
-            'product_type' => $product_type,
-            "selectedVariants" => $selectedVariants
-        ])->render();
+            return response()->json([
+                'success' => true,
+                'html' => $html,
+                'data' => [
+                    'variantsData' => $variantsData,
+                    'selectedVariants' => $selectedVariants
+                ]
+            ]);    
     }
-
-    public function saveStep2(Request $request, ProductTabService $service)
-    {
-        $service->step2($request->all());
-        return response()->json([
-            'success' => true,
-            'mainView' => $this->previousStep3($request->product_id),
-            'message' => 'Step 2 (Variants) saved successfully.',
-            'step' => '3'
-        ]);
-    }
-
     public function previousStep3($productId)
-    {
+    {   
         $product = Product::findOrFail($productId);
         $attributesData = CategoryAttribute::with('attribute:id,name')
             ->where('category_id', $product->main_category_id)
@@ -150,19 +151,23 @@ class MainProductController extends Controller
             ->pluck('attribute')
             ->unique('id')
             ->values();
-        
+      
         $preselectedAttributes = ProductAttribute::where('product_id', $productId)->get();
-        $getVariantReleatedProduct = $this->getVariantReleatedProduct($productId);
-        
-        return $mainView = view('admin.prodcuts.advance_feature_combined', [
+        $categories = Category::with('children.children')->whereNull('parent_id')->where('is_deleted', 0)->get();
+        $activeCategorie = Category::with('children.children')->where('is_deleted', 0)->whereNull('parent_id')->where('id', $product->main_category_id)->first(); 
+        $variantReleatedProduct = $this->getVariantReleatedProduct($productId); 
+        $tags = Tag::where('is_deleted', '!=', 1)->where('is_active', 1)->pluck('name', 'id')->toArray(); 
+        $country = Country::where('is_active', 1)->get(); 
+        return view('admin.prodcuts.advance_feature_combined', [
             'attributesData'            =>  $attributesData,
-            "variantReleatedProduct"    =>  $getVariantReleatedProduct,
-            "categories"                =>  Category::with('children.children')->whereNull('parent_id')->where('is_deleted', 0)->get(),
-            "activeCategorie"          =>   Category::with('children.children')->where('is_deleted', 0)->whereNull('parent_id')->where('id', $product->main_category_id)->first(),
-            "tags"                      =>  Tag::where('is_deleted', '!=', 1)->where('is_active', 1)->pluck('name', 'id')->toArray(),
-            "countries"                 =>  Country::where('is_active', 1)->get(),
+            "variantReleatedProduct"    =>  $variantReleatedProduct,
+            "categories"                =>  $categories,
+            "activeCategorie"           =>   $activeCategorie,
+            "tags"                      =>  $tags,
+            "countries"                 =>  $country,
             'product'                   =>  $product,
             'preselectedAttributes'     =>  $preselectedAttributes,
+
         ])->render();
     }
 
@@ -171,25 +176,6 @@ class MainProductController extends Controller
     public function saveStep3(ProductStep3Request $request, ProductTabService $service)
     {
         $service->step3($request->all());
-
-        // check front/back image selected for all variant
-        // $getVarientIdAll = allVarientByProductId($request->product_id);
-        // if(!empty($getVarientIdAll)){
-        //     $i = 1;
-        //     foreach($getVarientIdAll as $getVarientId){
-        //         $frontImg =  getActiveFrontImg($request->product_id,$getVarientId);
-        //         $BackImg =  getActiveBackImg($request->product_id,$getVarientId);
-        //         if( !empty($request->product_id) && (empty($frontImg) || empty($BackImg))) {
-        //             return response()->json([
-        //                 'success' => false,
-        //                 'message' => 'Please should be select Front/Back images compulsary --'. $i
-        //             ]);
-        //         }
-        //         $i++;
-        //     }
-        // }
-
-        // check front/back image for selected variant
         $getVarientId = activeVarientByProductId($request->product_id);
         $frontImg =  getActiveFrontImg($request->product_id,$getVarientId);
         $BackImg =  getActiveBackImg($request->product_id,$getVarientId);
@@ -200,31 +186,6 @@ class MainProductController extends Controller
             ]);
 
         }
-
-
-        $product = Product::findOrFail($request->product_id);
-        $seoView = view('admin.prodcuts.seo_feature_combined', [
-            'product' => $product
-        ])->render();
-
-        return response()->json([
-            'success' => true,
-            'seoView' => $seoView,
-            'message' => 'Step 3 saved successfully.',
-            'step' => '4'
-        ]);
-    }
-
-
-    public function saveStep4(Request $request)
-    {
-        $request->validate([
-            'meta_title'       => 'nullable|string',
-            'meta_description' => 'nullable|string',
-            'seo_content'      => 'nullable|string',
-
-        ]);
-
         $product = Product::findOrFail($request->product_id);
         $product->meta_title       = $request->meta_title;
         $product->meta_description = $request->meta_description;
@@ -232,7 +193,18 @@ class MainProductController extends Controller
         $product->is_active        = 1;
         $product->meta_keywords     = $request->meta_keywords;
         $product->save();
-
+        $seoView = view('admin.prodcuts.seo_feature_combined', [
+            'product' => $product
+        ])->render();
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'Product saved and published',
+            'seoView'=>$seoView
+        ]);
+    }
+    public function saveStep4(Request $request)
+    {
         return redirect()->route('admin-product-list')->with('success', 'Product saved and published.');
     }
 
@@ -260,6 +232,7 @@ class MainProductController extends Controller
             return '';
         }
 
+        $product = Product::where('id',$product_id)->first(); 
         $primaryVariantId = $variantIds[0];
         $primaryValues = $variantValues[0];
 
@@ -274,8 +247,6 @@ class MainProductController extends Controller
             })
             ->toArray();
 
-
-
         $deletedCombos = ProductVariantCombination::where('product_id', $product_id)
             ->where('status', '0')
             ->pluck('combination_id')
@@ -288,16 +259,43 @@ class MainProductController extends Controller
             ->toArray();
         $existingCombos = array_intersect($allCombos, $savedCombos);
 
-
-
         $groupedCombinations = $this->groupByPrimaryVariant($existingCombos, $primaryValues);
         $groupedDeleted = $this->groupByPrimaryVariant($deletedCombos, $primaryValues); // 👈 restore popup के लिए
+
+        $primaryIds = array_keys($groupedCombinations);
+        $mainVariantValueId = ProductVariantValue::where('product_id', $product_id)
+            ->where('is_main', 1)
+            ->value('variant_value_id');
+
+        $primaryValueData = VariantValue::whereIn('id', $primaryIds)
+            ->get()
+            ->keyBy('id');
+
+        $graphics = ProductGraphics::where('product_id', $product_id)
+            ->whereIn('variant_id', $primaryIds)
+            ->whereIn('graphic_type', ['image', 'video'])
+            ->get()
+            ->groupBy(function ($graphic) {
+                return $graphic->variant_id . '_' . $graphic->graphic_type;
+            });
+
+        $outOfStockCombinations = ProductVariantCombination::where('product_id', $product_id)
+            ->where('is_out_of_stock', 1)
+            ->get();
+
+        $imagePath = config('constant.PRODUCT_IMAGE_PATH');
 
         return view('admin.prodcuts.variant_combinations', compact(
             'primaryVariantId',
             'groupedCombinations',
             'groupedDeleted',
-            'product_id'
+            'product_id',
+            'mainVariantValueId',
+            'primaryValueData',
+            'graphics',
+            'outOfStockCombinations',
+            'imagePath',
+            'product',
         ))->render();
     }
 

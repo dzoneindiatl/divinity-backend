@@ -1,10 +1,9 @@
 <?php
 $WEBSITE_URL				=	env("APP_URL");
 $FRONT_WEBSITE_URL = env('WEBSITE_URL');
-//$BASE_PATH = public_path() . '\\';
 $BASE_PATH = '/home/divinityjewels/public_html/public/';
 if(!empty($_SERVER['SERVER_NAME']) && ($_SERVER['SERVER_NAME'] == 'localhost' || $_SERVER['SERVER_NAME'] == '127.0.0.1')){
-	$BASE_PATH =  'C:/xampp/htdocs/divinityindia/frontend/public/';
+	$BASE_PATH =  'C:/xampp/htdocs/divinity-frontend/public/';
 }
 
 return [

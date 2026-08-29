@@ -144,6 +144,7 @@ Route::prefix('')->name('admin-')->group(function () {
 
             Route::post('store/step1', [MainProductController::class, 'saveStep1'])->name('save.step1');
             Route::post('previous/step',[MainProductController::class, 'previousStep'])->name('previousStep');
+            Route::post('get-variant-record',[MainProductController::class,'getProductCategoryVariant'])->name('get-variant-record'); 
             Route::post('store/step2', [MainProductController::class, 'saveStep2'])->name('save.step2');
             Route::post('store/step3', [MainProductController::class, 'saveStep3'])->name('save.step3');
             Route::post('store/step4', [MainProductController::class, 'saveStep4'])->name('save.step4');

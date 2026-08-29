@@ -1,6 +1,3 @@
-<!-- ===========================
-| Edit Variant Modal Section |
-=========================== -->
 <?php
    $images = \App\Models\ProductGraphics::where('product_id', $product->id)->where('variant_id',$product->id)->where('graphic_type','image')->get();
    $videos = \App\Models\ProductGraphics::where('product_id', $product->id)->where('variant_id',$product->id)->where('graphic_type','video')->get();
@@ -182,7 +179,7 @@
                     <div class="col-md-12  mb-3">
                         <div class="form-group">
                             <label for="short_description">Short Description</label>
-                            <textarea class="form-control"  name="short_description" id="short_description" rows="4"> {{ $product->short_description }}</textarea>
+                            <textarea class="form-control ck_content @error('short_description') is-invalid @enderror"  name="short_description" id="short_description" rows="4"> {{ $product->short_description }}</textarea>
                         </div>
                     </div>
 
@@ -617,6 +614,38 @@
                     </div>    
                 </div>
                 @endif
+                <div class="row mt-3">
+                    <h3><u>Seo Feature</u></h3>
+                    <div class="col">
+                        <div class="form-group">
+                            <label for="meta_title">Meta Title <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" name="meta_title" id="meta_title" value="{{$product->meta_title}}" />
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="form-group">
+                            <label for="meta_keywords">Meta Keywords</label>
+                            <input type="text" class="form-control" name="meta_keywords" id="meta_keywords" value="{{$product->meta_keywords}}"  />
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col">
+                        <div class="form-group">
+                            <label for="meta_description">Meta Description </label>
+                            <textarea class="form-control" name="meta_description" id="meta_description" cols="30" rows="3">{{$product->meta_description }}</textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col">
+                        <div class="form-group">
+                            <label for="seo_content">Web SEO Content </label>
+                            <textarea class="form-control" name="seo_content" id="seo_content" cols="30" rows="3">{{$product->seo_content }}</textarea>
+                        </div>
+                    </div>
+                </div>
             </div>
             
 
@@ -628,9 +657,8 @@
                     $previousStep = 'step2';
                 }
                 ?>
-                <button type="button" class="btn btn-primary prevBtn" onclick="onclickPrevious('<?php echo $previousStep; ?>')">Preview</button>
-                <button type="button" id="next" class="btn btn-primary nextBtn">Save & Continue</button>
-                <button type="button" id="finish" class="btn btn-primary nextBtn">Finish</button>
+                <button type="button" class="btn btn-primary prevBtn" onclick="onclickPrevious('step1')">Previous</button>
+                <button type="button" id="finish" class="btn btn-primary nextBtn btn-lg">Save</button>
             </div>
         </div>
 
@@ -655,25 +683,6 @@
                         name="is_new_arrivals" @if (isset($product) && $product->is_new_arrivals == 1) checked @endif />
                     <label class="form-check-label" for="is_new">New Arrivals</label>
                 </div>
-
-
-                <!-- <div class="form-check form-switch">
-                    <input class="form-check-input" type="checkbox" role="switch" id="is_featured"
-                        name="is_featured" @if (isset($product) && $product->is_featured == 1) checked @endif />
-                    <label class="form-check-label" for="is_featured">Featured Products</label>
-                </div> -->
-
-                <!-- <div class="form-check form-switch">
-                    <input class="form-check-input" type="checkbox" role="switch" id="status" name="trending"
-                        @if (isset($product) && $product->trending == 1) checked @endif />
-                    <label class="form-check-label" for="status">Trending Products</label>
-                </div> -->
-
-                <!-- <div class="form-check form-switch">
-                    <input class="form-check-input" type="checkbox" role="switch" id="status"
-                        name="best_selling" @if (isset($product) && $product->best_selling == 1) checked @endif />
-                    <label class="form-check-label" for="status">Best Selling</label>
-                </div> -->
 
                 <div class="form-check form-switch">
                     <input class="form-check-input" type="checkbox" role="switch" id="status"
@@ -816,39 +825,9 @@
                     @endif
                 @endforeach
             </div>
-
-
-            <!-- End code by Mohit -->
-
-            <!-- <div class="card-header mt-3">
-                <div class="card-title">
-                    <h6>Tags</h6>
-                </div>
-            </div>
-            <hr> -->
-
             @php
                 $selectedTags = explode(',', $product->product_tags ?? '');
             @endphp
-            <!-- <div class="card-body">
-                <div class="row">
-                    <div class="col">
-                        <div class="form-group">
-                            <label for="tags"> </label>
-                            <select class="form-control product_select2" name="product_tags[]" id="tags"
-                                multiple>
-                                @foreach ($tags as $key => $tag)
-                                    <option value="{{ $key }}"
-                                        {{ in_array($key, $selectedTags) ? 'selected' : '' }}>
-                                        {{ $tag }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-                    </div>
-                </div>
-            </div> -->
-
         </div>
     </div>
 </form>
@@ -906,7 +885,11 @@
 
 <script src="https://cdn.jsdelivr.net/npm/jquery-validation@1.19.5/dist/jquery.validate.min.js"></script>
 
-
+<script>
+    CKEDITOR.replace('seo_content');
+    CKEDITOR.replace('meta_description');
+    CKEDITOR.replace('short_description'); 
+</script>
 <script>
     var getAttributesValues = "{{ route('admin-product-attribute-values') }}";
     var getSubCategory = "{{ route('admin-product-ajax-subcategory') }}";
@@ -951,13 +934,6 @@
             });
         });
 
-        // Active step 3 linktab &  stepdiv 
-        $(".tab-pane").removeClass("active");
-        $("#tab3").addClass("active");
-
-        $(".nav-link").removeClass("active");
-        $('#step3').addClass("active");
-
         $('#productForm').validate({
             errorClass: 'is-invalid',
             errorElement: 'div',
@@ -983,10 +959,8 @@
                 CKEDITOR.instances[instance].updateElement();
             }
             const form = $('#productForm');
-
-            if (form.valid()) {
+            // if (form.valid()) {
                 const formData = new FormData(form[0]);
-
                 $.ajax({
                     url: "{{ route('admin-product-save.step3') }}",
                     type: "POST",
@@ -1003,24 +977,19 @@
                             Processing...
                         `);
                     },
-                    success: function(res) {
-                        if(!res.success){
-                            Swal.fire({ icon: 'error', title: 'Validation Error', text: res.message });
+                    success: function(response) {
+                        if(!response.success){
+                            Swal.fire({ icon: 'error', title: 'Validation Error', text: response.message });
                             return false;
                         } else {
                             if(nextBtnId=='finish'){
                                 window.location.href = "{{ route('admin-product-list') }}";
                                 return false;
                             }
-                            if (res.success && res.step==2) {
-                                $('#tab2').html(res.varient);
-                            } else if (res.success && res.step==3) {
-                                $('#tab3').html(res.mainView);
-                            } else if (res.success && res.step==4) {
-                                $('#tab4').html(res.seoView);
-                            } else {
-                                alert(res.message || "Something went wrong");
-                            }
+                            $('#tab2').html("");
+                            $('#formTabs .nav-link').removeClass('active');
+                            $('#formTabs .nav-link[data-tab="tab4"]').addClass('active');
+                            $('#tab2').html(response.seoView);
                         }
                     },
                     error: function(xhr) {
@@ -1074,7 +1043,7 @@
                     }
 
                 });
-            }
+            // }
         });
     });
 

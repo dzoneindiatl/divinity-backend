@@ -655,7 +655,7 @@ function openCropper(event, variantId)
 function renderPreviews(variantId) {
     const container = document.getElementById('preview_images_' + variantId);
     const groupRow = document.querySelector(`.variant_group_row input[name="main_variant"][value="${variantId}"]`)?.closest('.variant_group_row');
-    const thumbs = document.querySelector('.image-thumbnails');
+    const thumbs = document.querySelector('.image-thumbnails-'+ variantId);
 
     if (!container || !thumbs) return;
 
