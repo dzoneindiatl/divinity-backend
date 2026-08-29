@@ -1,0 +1,2045 @@
+@extends('admin.layout.master')
+
+@push('styles')
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet">
+    <script src="{{ asset('assets/js/ckeditor/ckeditor.js') }}"></script>
+    <link rel="stylesheet" type="text/css" href="{{ asset('assets/front/css/product.css') }}">
+@endpush
+@section('content')
+    <div class="row">
+        <div class="col-xl-12">
+            <div class="card custom-card">
+                <!-- Add by Mohit -->
+                <div class="d-md-flex d-block align-items-center justify-content-between my-4 page-header-breadcrumb px-2">
+                    <a class="btn btn-dark" href="/admin/product/list"> Back </a>
+                    <div class="ms-md-1 ms-0">
+                        <nav>
+                            <ol class="breadcrumb mb-0">
+                                <li class="breadcrumb-item"><a href="/admin/dashboard">Home</a></li>
+                                <li class="breadcrumb-item"><a href="/admin/product/list">List</a></li>
+                                <li class="breadcrumb-item active" aria-current="page">Edit Product</li>
+                            </ol>
+                        </nav>
+                    </div>
+                </div>
+                <!-- End Code by Mohit -->
+
+                <div class="card-header">
+                    <div class="card-title">
+                        <h5>Edit Product </h5>
+                    </div>
+                </div>
+                <div class="card-body">
+
+                    <form id="finalProductForm" method="post"
+                        action="{{ route('admin-product-save-new-product', ['product_id' => $product_details->id]) }}"
+                        enctype="multipart/form-data">
+                        @csrf
+
+                        <div class="row">
+                            <div class="col-md-9">
+                                <div class="card-header">
+                                    <div class="card-title">
+                                        <h6>General Information </h6>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="name">Name <span class="text-danger">*</span></label>
+                                                <input type="text"
+                                                    class="form-control @error('name') is-invalid @enderror" id="name"
+                                                    name="name" placeholder="Product Name"
+                                                    value="{{ old('name', isset($product) ? $product->name : '') }}">
+                                                @if ($errors->has('name'))
+                                                    <div class="invalid-feedback">
+                                                        {{ $errors->first('name') }}
+                                                    </div>
+                                                @endif
+                                            </div>
+                                        </div>
+                                        <!-- Add Code of Mohit -->
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="weight_type">Country Of Origin <span
+                                                        class="text-danger">*</span></label>
+                                                <select name="country_origin" class="form-control" required>
+                                                    <option value="select value">Select Country</option>
+                                                    @if (!empty($countries))
+                                                        @foreach ($countries as $attval)
+                                                            <option @if ($product->country_origin == $attval->id) selected @endif
+                                                                value="{{ $attval->id }}">{{ $attval->name }}
+                                                            </option>
+                                                        @endforeach
+                                                    @endif
+
+                                                </select>
+                                            </div>
+
+                                        </div>
+                                        <!-- End Code of Mohit -->
+                                        <div class="col-md-12">
+                                            <div class="row">
+                                                <div class="col">
+                                                    <div class="form-group">
+                                                        <label for="sku">SKU <span class="text-danger">*</span></label>
+                                                        <input type="text" class="form-control" id="sku"
+                                                            value="{{ $product_details->sku }}" name="sku"
+                                                            placeholder="SKU">
+                                                        @if ($errors->has('sku'))
+                                                            <div class="invalid-feedback">
+                                                                {{ $errors->first('sku') }}
+                                                            </div>
+                                                        @endif
+                                                    </div>
+                                                </div>
+                                                <div class="col">
+                                                    <div class="form-group">
+                                                        <label for="hsn">HSN</label>
+                                                        <input type="text"
+                                                            class="form-control @error('hsn') is-invalid @enderror"
+                                                            id="hsn" name="hsn" placeholder="HSN"
+                                                            value="{{ isset($product) ? $product->hsn : old('hsn') }}">
+                                                    </div>
+                                                </div>
+                                                <div class="col">
+                                                    <div class="form-group">
+                                                        <label for="bar_code">Barcode</label>
+                                                        <input type="text" class="form-control" id="bar_code"
+                                                            value="{{ isset($product) ? $product->bar_code : old('bar_code') }}"
+                                                            name="bar_code" placeholder="Barcode">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="card-header">
+                                    <div class="card-title">
+                                        <h6>Product Descriptions</h6>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <div class="form-group">
+                                                <label for="short_description">Short Description</label>
+                                                <textarea class="form-control" name="short_description" id="short_description" rows="4">{{ isset($product) ? $product->short_description : old('massage') }}</textarea>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-12">
+                                            <div class="row">
+                                                <div class="col">
+                                                    <div class="form-group">
+                                                        <label for="description">Product Description <span
+                                                                class="text-danger">*</span></label>
+                                                        <textarea class="form-control  ck_content" name="description" id="description" rows="4">
+                                                        {!! isset($product->description) ? $product->description : old('description') !!}
+                                                    </textarea>
+
+                                                        <div class="invalid-feedback-1" id="p-description"></div>
+                                                    </div>
+                                                </div>
+
+
+
+                                                <div class="col">
+                                                    <div class="form-group">
+                                                        <label for="specification">Product Specification <span
+                                                                class="text-danger">*</span></label>
+                                                        <textarea class="form-control ck_content" name="specification" id="specification" rows="4">
+                                                    {!! isset($product->specification) ? $product->specification : old('specification') !!}
+                                                    </textarea>
+                                                        <div class="invalid-feedback-1" id="p-specification"></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="row">
+                                                <div class="col">
+                                                    <div class="form-group">
+                                                        <label for="product_details">Product Details</label>
+                                                        <textarea class="form-control ck_content @error('product_details') is-invalid @enderror" name="product_details"
+                                                            id="product_details" rows="4">
+                                                        {!! isset($product->product_details) ? $product->product_details : old('product_details') !!}
+                                                    </textarea>
+                                                    </div>
+                                                </div>
+
+                                                <div class="col">
+                                                    <div class="form-group">
+                                                        <label for="others">Others</label>
+                                                        <textarea class="form-control ck_content" name="others" id="others" rows="4">
+                                                        {!! isset($product->others) ? $product->others : old('others') !!}
+                                                    </textarea>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="row">
+                                                <div class="col">
+                                                    <div class="form-group">
+                                                        <label for="wash_care">Wash Care</label>
+                                                        <textarea class="form-control ck_content" name="wash_care" id="wash_care" rows="4">{!! isset($product->wash_care) ? $product->wash_care : old('wash_care') !!}</textarea>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+
+                                </div>
+
+                                <div class="card-header">
+                                    <div class="card-title">
+                                        <!-- <h6>Measurements</h6> -->
+                                        <h6>Shipping Information</h6>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <!-- <div class="col">
+                                                                                        <div class="form-group">
+                                                                                            <label for="material">Material</label>
+                                                                                            <input type="text" class="form-control" name="material"
+                                                                                                id="material"value="{{ isset($product) ? $product->material : old('material') }}" />
+                                                                                        </div>
+                                                                                    </div> -->
+                                        <div class="col">
+                                            <div class="form-group">
+                                                <label for="weight">Weight</label>
+                                                <input type="text" class="form-control" name="weight" id="weight"
+                                                    value="{{ isset($product) ? $product->weight : old('weight') }}" />
+                                            </div>
+                                        </div>
+                                        <div class="col">
+                                            <div class="form-group">
+                                                <label for="weight_type">Weight type</label>
+                                                <select
+                                                    class="select2-original form-control @error('weight_type') is-invalid @enderror"
+                                                    name="weight_type" id="weight_type">
+                                                    <option value="">Select Type</option>
+                                                    <option value="grm"
+                                                        {{ (isset($product) && $product->weight_type == 'grm') || old('weight_type') == 'grm' ? 'selected' : '' }}>
+                                                        GRM</option>
+                                                    <option value="kg"
+                                                        {{ (isset($product) && $product->weight_type == 'kg') || old('weight_type') == 'kg' ? 'selected' : '' }}>
+                                                        KG</option>
+                                                </select>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <!-- <div class="col">
+                                                                                        <div class="form-group">
+                                                                                            <label for="style">Style</label>
+                                                                                            <input type="text" class="form-control" name="style" id="style"
+                                                                                            value="{{ isset($product) ? $product->style : old('style') }}" />
+                                                                                        </div>
+                                                                                    </div> -->
+                                        <div class="col">
+                                            <!-- <div class="form-group">
+                                                                                            <label for="country_origin">Country Of Origin *</label>
+                                                                                            <input type="text" class="form-control" name="country_origin"
+                                                                                                id="country_origin" value="{{ isset($product) ? $product->country_origin : old('country_origin') }}" />
+                                                                                        </div> -->
+                                            <!-- <div class="form-group">
+                                                                                            <label for="weight_type">Country Of Origin <span class="text-danger">*</span></label>
+                                                                                            <select name="country_origin" class="form-control" required>
+                                                                                                <option value="select value">Select Country</option>
+                                                                                                @if (!empty($countries))
+    @foreach ($countries as $attval)
+    <option
+                                                                                                            @if ($product->country_origin == $attval->id) selected @endif
+                                                                                                            value="{{ $attval->id }}">{{ $attval->name }}
+                                                                                                        </option>
+    @endforeach
+    @endif
+
+                                                                                            </select>
+                                                                                        </div> -->
+
+                                        </div>
+                                    </div>
+                                </div>
+                                  <!-- Categories  -->
+                                <div class="card custom-card accordion-item">
+
+                                    <div class="card-header accordion-button" data-bs-toggle="collapse"
+                                        data-bs-target="#category-section" aria-expanded="true"
+                                        aria-controls="panelsStayOpen-collapseOne">
+                                        <div class="card-title"> Categories </div>
+                                    </div>
+
+                                    @php
+                                        //$crtCatAssign = \App\Helpers\Attributes::fixCategoryId($product->category_id);
+                                    @endphp
+
+                                    <div class="card-body accordion-collapse collapse show" id="category-section">
+                                        <div class="row">
+                                            <div class="col-4">
+                                                <div class=" p-0">
+                                                    <div class="mb-3">
+                                                        <label for="categorys_id" class="form-label">Category</label>
+                                                        <select name="categorys_id" id="category_id"
+                                                            class="js-example-placeholder-single js-states form-control"
+                                                            onchange="getRelatedSubCategories();">
+                                                            <option value="">Select Category</option>
+                                                            @if (!empty($product) && isset($product))
+                                                                @foreach ($categories as $categories1)
+                                                                    <option value="{{ $categories1->id }}"
+                                                                        {{ !empty($product->category_id ) && in_array($categories1->id, (array)$product->category_id) ? 'selected' : '' }}>
+                                                                        {{ $categories1->name }}
+                                                                    </option>
+                                                                @endforeach
+                                                            @else
+                                                                @foreach ($categories as $categories1)
+                                                                    <option value="{{ $categories1->id }}">
+                                                                        {{ ucfirst($categories1->name) }}</option>
+                                                                @endforeach
+                                                            @endif
+                                                        </select>
+                                                        <div class="invalid-feedback" id="categorysidError">
+                                                            {{ $errors->first('categorys_id') }}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            @if($product->sub_category_id)
+                                            @php
+                                               // $subCrtCatAssign = \App\Helpers\Attributes::fixCategoryId($product->sub_category_id);
+                                            @endphp
+
+                                            <div class="col-4" id="main_div_sub_cat">
+                                                <div class=" p-0">
+                                                    <div class="mb-3">
+                                                        <label for="subcate_id" class="form-label">Sub Category</label>
+                                                        <select name="subcate_id" id="subcate_id"
+                                                            class="js-example-placeholder-single js-states form-control"
+                                                            onchange="getchildcategory(this.value);">
+                                                            <option value="">Select Subcategory</option>
+                                                            @if (!empty($product) && isset($product))
+                                                                @foreach ($allSubCategory as $subcategorye)
+                                                                    <option value="{{ $subcategorye->id }}"
+                                                                        {{ in_array($subcategorye->id, (array)$product->sub_category_id) ? 'selected' : '' }}>
+                                                                        {{ ucfirst($subcategorye->name) }}
+                                                                    </option>
+                                                                @endforeach
+                                                            @endif
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            @endif
+                                            
+                                            @if($product->child_category_id)
+                                            @php
+                                                //$childCrtCatAssign = \App\Helpers\Attributes::fixCategoryId($product->child_category_id);
+                                            @endphp
+                                            <div class="col-4" id="main_div_child_cat">
+                                                <div class=" p-0">
+                                                    <div class="mb-3">
+                                                        <label for="childcate_id" class="form-label">Child Category</label>
+                                                        <select name="childcate_id" id="childcate_id"
+                                                            class="js-example-placeholder-single js-states form-control">
+                                                            <option value="">Select Child Category</option>
+                                                            @if (!empty($product) && isset($product))
+                                                                @foreach ($allChildCategory as $childCat)
+                                                                    <option value="{{ $childCat->id }}"
+                                                                        {{in_array($childCat->id, (array) $product->child_category_id) ? 'selected' : '' }}>
+                                                                        {{ ucfirst($childCat->name) }}
+                                                                    </option>
+                                                                @endforeach
+                                                            @endif
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            @endif
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="card custom-card accordion-item">
+
+                                    <div class="card-header accordion-button" data-bs-toggle="collapse"
+                                        data-bs-target="#price-section" aria-expanded="true"
+                                        aria-controls="panelsStayOpen-collapseOne">
+
+                                        <div class="card-title"> Related products </div>
+
+                                    </div>
+
+                                    <div class="card-body accordion-collapse collapse show" id="price-section">
+
+                                        <div class="row">
+
+                                            <div class="col-4">
+
+                                                <div class=" p-0">
+
+                                                    <div class="mb-3">
+
+                                                        <label for="categorys_id" class="form-label">Category</label>
+
+                                                        <select name="categorys_id" id="categorys_id"
+                                                            class="js-example-placeholder-single js-states form-control"
+                                                            onchange="getsubcategory(this.value);">
+
+                                                            <option value="">Select Category</option>
+                                                            @if (!empty($product) && isset($product))
+                                                                @foreach ($categories as $categories1)
+                                                                    <option value="{{ $categories1->id }}"
+                                                                        {{ !empty($product->related_product_categores_id) && $product->related_product_categores_id == $categories1->id ? 'selected' : '' }}>
+                                                                        {{ $categories1->name }}
+                                                                    </option>
+                                                                @endforeach
+                                                            @else
+                                                                @foreach ($categories as $categories1)
+                                                                    <option value="{{ $categories1->id }}">
+                                                                        {{ ucfirst($categories1->name) }}</option>
+                                                                @endforeach
+                                                            @endif
+                                                        </select>
+                                                        <div class="invalid-feedback" id="categorysidError">
+                                                            {{ $errors->first('categorys_id') }}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-4">
+
+                                                <div class=" p-0">
+
+                                                    <div class="mb-3">
+
+                                                        <label for="subcategory_id" class="form-label">Subcategory</label>
+
+                                                        <select name="subcategory_id" id="subcategory_id"
+                                                            class="js-example-placeholder-single js-states form-control"
+                                                            onchange="getproduct(this.value);">
+                                                            <option value="">Select Subcategory</option>
+
+                                                            @if (!empty($product) && isset($product))
+                                                                @foreach ($subcategory as $subcategorye)
+                                                                    <option value="{{ $subcategorye->id }}"
+                                                                        {{ $subcategorye->id == $product->related_product_subcategory_id ? 'selected' : '' }}>
+                                                                        {{ ucfirst($subcategorye->name) }}
+                                                                    </option>
+                                                                @endforeach
+                                                            @endif
+
+                                                        </select>
+
+                                                    </div>
+
+                                                </div>
+
+                                            </div>
+                                            @if (!empty($product) && isset($product))
+                                                @php
+
+                                                    if (is_string($product->related_products)) {
+                                                        $product->related_products = explode(
+                                                            ',',
+                                                            $product->related_products,
+                                                        );
+                                                    }
+
+                                                @endphp
+                                            @endif
+                                            <div class="col-4">
+                                                <div class=" p-0">
+                                                    <div class="mb-3">
+                                                        <label for="Productid" class="form-label">Related Product</label>
+                                                        <select name="Product_id[]" id="Productid"
+                                                            class="js-example-placeholder-single js-states form-control product_select2"
+                                                            multiple>
+                                                            <option value="">Select Product</option>
+                                                            @if (!empty($product) && isset($product))
+                                                                @foreach ($subproducts as $products)
+                                                                    <option value="{{ $products->id }}"
+                                                                        {{ is_array($product->related_products) && in_array($products->id, $product->related_products) ? 'selected' : '' }}>
+                                                                        {{ ucfirst($products->name) }}
+                                                                    </option>
+                                                                @endforeach
+                                                            @endif
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+
+                                <div class="card custom-card accordion-item">
+                                    <div class="card-header accordion-button" data-bs-toggle="collapse"
+                                        data-bs-target="#attributes-section" aria-expanded="true"
+                                        aria-controls="attributes-section">
+                                        <div class="card-title">Attributes</div>
+                                    </div>
+                                    <div class="card-body accordion-collapse collapse show" id="attributes-section">
+                                        <div class="row" id="attribute-pairs-container">
+                                            <!-- Attribute-value pairs will be inserted here -->
+                                            @if (isset($product))
+                                                @php
+                                                    $getColorDetails = [];
+                                                    $sub_available_units = '0';
+
+                                                    // Get product attribute and value data with a join to get attribute_id
+                                                    $getAttrDetails = \App\Models\ProductAttribute::where(
+                                                        'product_id',
+                                                        $product['id'],
+                                                    )
+                                                        ->get()
+                                                        ->toArray();
+
+                                                    // Fetch attribute values and join to get attribute_id and attribute value name
+                                                    $getAttrValDetails = \App\Models\ProductAttributeValue::select(
+                                                        'product_attribute_values.*',
+                                                        'product_attributes.attribute_id',
+                                                        'attribute_values.name as value_name',
+                                                    )
+                                                        ->join(
+                                                            'product_attributes',
+                                                            'product_attributes.id',
+                                                            '=',
+                                                            'product_attribute_values.product_attribute_id',
+                                                        )
+                                                        ->join(
+                                                            'attribute_values',
+                                                            'attribute_values.id',
+                                                            '=',
+                                                            'product_attribute_values.attribute_value_id',
+                                                        )
+                                                        ->where('product_attribute_values.product_id', $product['id'])
+                                                        ->get()
+                                                        ->toArray();
+                                                @endphp
+
+                                                @if (!empty($getAttrDetails))
+                                                    @foreach ($getAttrDetails as $attsval)
+                                                        @php
+                                                            // Filter the attribute values for the current attribute
+                                                            $attrValues = array_filter($getAttrValDetails, function (
+                                                                $item,
+                                                            ) use ($attsval) {
+                                                                return $item['attribute_id'] ==
+                                                                    $attsval['attribute_id'];
+                                                            });
+                                                            $icount = 1;
+                                                        @endphp
+
+                                                        @foreach ($attrValues as $aval)
+                                                            <div
+                                                                class="row mb-3 attribute-pair removeeditoption{{ $attsval['attribute_id'] . $icount }}">
+                                                                <div class="col-4">
+                                                                    <div class="p-0">
+                                                                        <div class="mb-3">
+                                                                            <label class="form-label">Attribute</label>
+                                                                            <select name="attribute_ids[]"
+                                                                                class="form-control attribute-select attribute-select-1"
+                                                                                onchange="getAttributeValues(this);refreshAttributeSelectOptions(this);">
+                                                                                <option value="">Select Attribute
+                                                                                </option>
+                                                                                @if (!empty($attributes))
+                                                                                    @foreach ($attributes as $attval)
+                                                                                        <option
+                                                                                            value="{{ $attval->id }}"
+                                                                                            {{ $attsval['attribute_id'] == $attval->id ? 'selected' : '' }}>
+                                                                                            {{ $attval->name }}
+                                                                                        </option>
+                                                                                    @endforeach
+                                                                                @endif
+                                                                            </select>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+
+                                                                <div class="col-4">
+                                                                    <div class="p-0">
+                                                                        <div class="mb-3">
+                                                                            <label class="form-label">Attribute
+                                                                                Value</label>
+                                                                            <select
+                                                                                name="attribute_value_ids[{{ $attsval['attribute_id'] }}][]"
+                                                                                class="form-control value-select">
+                                                                                <option value="">Select Attribute
+                                                                                    Value</option>
+                                                                                @if (!empty($attrValues))
+                                                                                    @foreach ($attrValues as $daval)
+                                                                                        <option
+                                                                                            value="{{ $aval['attribute_value_id'] }}"
+                                                                                            {{ in_array($aval['attribute_value_id'], array_column($getAttrValDetails, 'attribute_value_id')) ? 'selected' : '' }}>
+                                                                                            {{ $aval['value_name'] }}
+                                                                                        </option>
+                                                                                    @break
+                                                                                @endforeach
+                                                                            @endif
+                                                                        </select>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+
+                                                            <div class="col-4 d-flex align-items-center">
+                                                                <div class="p-0">
+                                                                    <button class="btn btn-danger"
+                                                                        onclick="removeCustomBox('removeeditoption{{ $attsval['attribute_id'] . $icount }}')"
+                                                                        type="button">Remove</button>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <?php $icount++; ?>
+                                                    @endforeach
+                                                @endforeach
+                                            @endif
+                                        @endif
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-12">
+                                            <button id="add-attribute-button" class="btn btn-primary"
+                                                type="button">+ Select
+                                                Attribute</button>
+                                            <button id="add-new-attribute-button" class="btn btn-secondary"
+                                                type="button">+ Add New
+                                                Attribute</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="modal fade" id="addAttributeModal" tabindex="-1"
+                                aria-labelledby="addAttributeModalLabel" aria-hidden="true">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="addAttributeModalLabel">Add New Attribute</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                                aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body" id="attributes_container">
+                                            <div class="mb-3">
+                                                <label for="attributeName" class="form-label">Attribute Name</label>
+                                                <select class="form-select attribute-select" id="attributeName"
+                                                    name="attributeName">
+                                                    <!-- Options can be added dynamically or pre-defined here -->
+                                                </select>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label for="attributeValue" class="form-label">Attribute Value</label>
+                                                <!-- <input type="text" class="form-control" id="attributeValue" multiple> -->
+                                                <input type="text" class="form-control" id="attributeValue"
+                                                    placeholder="Enter multiple values separated by comma">
+                                                <small class="text-muted">Enter multiple values separated by comma
+                                                    (e.g. red, green, blue)</small>
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary"
+                                                data-bs-dismiss="modal">Close</button>
+                                            <button type="button" id="saveAttributeButton"
+                                                class="btn btn-primary">Save
+                                                Attribute</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            <div class="card-header">
+                                <div class="card-title">
+                                    <h6>Pricing</h6>
+                                </div>
+                            </div>
+
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col">
+                                        <div class="form-group">
+                                            <label for="mrp">MRP <span class="text-danger">*</span></label>
+                                            <input type="text" required
+                                                class="form-control @error('buying_price') is-invalid @enderror"
+                                                id="buying_price" name="buying_price"
+                                                placeholder="Enter Product Price"
+                                                value="{{ isset($product) ? $product->buying_price : old('buying_price') }}">
+                                            @if ($errors->has('buying_price'))
+                                                <div class="invalid-feedback">{{ $errors->first('buying_price') }}
+                                                </div>
+                                            @endif
+                                        </div>
+                                        <div class="invalid-feedback" id="buyingpriceError">
+                                            {{ $errors->first('buying_price') }}
+                                        </div>
+                                    </div>
+                                    <div class="col">
+                                        <div class="form-group">
+                                            <label for="discount">Discount</label>
+                                            <input type="number"
+                                                class="form-control @error('discount') is-invalid @enderror"
+                                                id="discount" name="discount"
+                                                value="{{ isset($product) ? $product->discount : 0 }}"
+                                                placeholder="Enter Product discount">
+                                            @if ($errors->has('discount'))
+                                                <div class="invalid-feedback">{{ $errors->first('discount') }}</div>
+                                            @endif
+                                        </div>
+                                    </div>
+                                    <div class="col">
+                                        <div class="form-group">
+                                            <label for="discount_type">Discount Type</label>
+                                            {{-- <select class="form-control product_select2" name="discount_type"
+                                    id="discount_type" multiple>
+                                    <option value="percentage">Percentage</option>
+                                    <option value="fixed">Fixed</option>
+                                </select> --}}
+                                            <select name="discount_type" id="discount_type"
+                                                class="js-example-placeholder-single js-states form-control">
+                                                <option value="flat"
+                                                    {{ isset($product) && $product->discount_type == 'flat' ? 'selected' : '' }}>
+                                                    Flat</option>
+                                                <option value="percentage"
+                                                    {{ isset($product) && $product->discount_type == 'percentage' ? 'selected' : '' }}>
+                                                    Percentage</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col">
+                                        <div class="form-group">
+                                            <label for="selling_price">Selling Price <span
+                                                    class="text-danger">*</span></label>
+                                            <input type="text"
+                                                class="form-control @error('selling_price') is-invalid @enderror"
+                                                id="selling_price" name="selling_price"
+                                                value="{{ isset($product) ? $product->selling_price : old('selling_price') }}"
+                                                readonly>
+                                            @if ($errors->has('selling_price'))
+                                                <div class="invalid-feedback">{{ $errors->first('selling_price') }}
+                                                </div>
+                                            @endif
+                                        </div>
+                                        <div class="invalid-feedback" id="sellingpriceError">
+                                            {{ $errors->first('selling_price') }}
+                                        </div>
+                                    </div>
+
+                                    <div class="col">
+                                        <div class="form-group">
+                                            <label for="qty">Quantity <span class="text-danger">*</span></label>
+                                            <input type="text" required
+                                                class="form-control @error('qty') is-invalid @enderror" id="qty"
+                                                name="qty"
+                                                value="{{ isset($product) ? $product->qty : old('qty') }}">
+                                            @if ($errors->has('qty'))
+                                                <div class="invalid-feedback">{{ $errors->first('qty') }}
+                                                </div>
+                                            @endif
+                                        </div>
+                                        <div class="invalid-feedback" id="sellingpriceError">
+                                            {{ $errors->first('qty') }}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col">
+                                        <div class="form-group">
+                                            <label for="maxProduct">Maximum Selling Limit</label>
+                                            <input type="text" class="form-control" id="maxProduct"
+                                                value="{{ !empty($product->max_selling_units) ? $product->max_selling_units : old('max_selling_units') }}"
+                                                name="max_selling_units">
+                                        </div>
+                                    </div>
+                                    <div class="col">
+                                        <div class="form-group">
+                                            <label for="minProduct">Minimum Stock Limit</label>
+                                            <input type="text" class="form-control" id="minProduct"
+                                                value="{{ !empty($product->min_selling_units) ? $product->min_selling_units : old('min_selling_units') }}"
+                                                name="min_selling_units">
+                                        </div>
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+
+
+
+                            <div class="card-header">
+                                <div class="card-title row col-md-12">
+                                    <div class="col-md-6">
+                                        <h6>Variants</h6>
+                                    </div>
+                                    <div class="col-md-6 text-end">
+                                        <span>Toral Qty : </span><span class="t-qty">0</span>
+                                    </div>
+                                </div>
+                            </div>
+
+
+
+
+                            <div class="card-body">
+                                @foreach ($available_variants as $primary_variant_id => $variant_group)
+                                    @php
+                                        $firstVariant = $variant_group->first(); // representative variant
+
+                                        $colorName = '';
+                                        if (isset($firstVariant->primary_variant_value->variant_value->variant_id)) {
+                                            $variantId =
+                                                $firstVariant->primary_variant_value->variant_value->variant_id;
+                                            $variant = \App\Models\Variant::find($variantId);
+                                            $colorName = $variant ? $variant->name : 'N/A';
+                                        }
+
+                                        $variantCount = \App\Models\ProductVariantCombination::where(
+                                            'product_id',
+                                            $product_details->id,
+                                        )
+                                            ->where('primary_variant_value_id', $primary_variant_id)
+                                            ->count();
+                                    @endphp
+
+                                    <div class="row variant_group_row">
+                                        <div class="col-12">
+                                            <h5 class="mb-3">
+                                                <input class="form-check-input me-2" type="radio"
+                                                    value="{{ $primary_variant_id }}" name="main_variant"
+                                                    id="variant_{{ $primary_variant_id }}"
+                                                    onchange="setMainProduct({{ $primary_variant_id }}, {{ $product->id }})"
+                                                    {{ isset($firstVariant->primary_variant_value->is_main) && $firstVariant->primary_variant_value->is_main == 1 ? 'checked' : '' }}>
+
+                                                <label for="variant_{{ $primary_variant_id }}">
+                                                    <!-- Variant : {{ $firstVariant->primary_variant_value->variant_value->name ?? 'N/A' }} -->
+                                                    <!-- {{ $colorName }} : {{ $firstVariant->primary_variant_value->variant_value->name ?? 'N/A' }} have {{ $variantCount }} Variants -->
+                                                    Is this primary :
+                                                    {{ $firstVariant->primary_variant_value->variant_value->name ?? 'N/A' }}
+                                                    have {{ $variantCount }} Variants
+                                                </label>
+                                            </h5>
+
+                                            <div class="d-flex align-items-center gap-3 flex-wrap mb-2">
+
+                                                <button type="button"
+                                                    class="btn btn-outline-secondary image_upload_button py-3"
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target="#uploadModal_{{ $primary_variant_id }}">
+                                                    <div class="text-center">
+                                                        <div class="fs-2 fw-bold">+</div>
+                                                        <div class="inner_text small">Add Images & Video</div>
+                                                    </div>
+                                                </button>
+
+                                                <div class="image-thumbnails d-flex flex-wrap gap-2 mb-2">
+                                                    @foreach ($firstVariant->variant_images as $image)
+                                                        <img src="{{ url('uploads/products/' . $image->graphic) }}"
+                                                            id="file-{{ $image->id }}" alt="Variant Image"
+                                                            class="img-fluid" style="max-width: 100px;">
+                                                    @endforeach
+                                                </div>
+
+
+                                                <div class="video-thumbnails d-flex flex-wrap gap-2">
+                                                    @foreach ($firstVariant->variant_videos as $video)
+                                                        <video width="150" height="100" controls
+                                                            id="file-{{ $video->id }}">
+                                                            <source
+                                                                src="{{ url('uploads/products/' . $video->graphic) }}"
+                                                                type="video/mp4">
+                                                            Your browser does not support the video tag.
+                                                        </video>
+                                                    @endforeach
+                                                </div>
+                                            </div>
+
+                                            <div class="modal fade" id="uploadModal_{{ $primary_variant_id }}"
+                                                tabindex="-1" aria-hidden="true">
+                                                <div class="modal-dialog modal-lg modal-dialog-centered">
+                                                    <div class="modal-content p-3">
+                                                        <div class="modal-header">
+                                                            <h5 class="modal-title">Upload Files for
+                                                                {{ $firstVariant->primary_variant_value->value ?? 'Group' }}
+                                                            </h5>
+                                                            <button type="button" class="btn-close"
+                                                                data-bs-dismiss="modal"></button>
+                                                        </div>
+
+                                                        <div class="modal-body">
+                                                            <div class="mb-3">
+                                                                <label class="form-label fw-semibold">Select
+                                                                    Images</label>
+                                                                <input type="file"
+                                                                    name="variant_images[{{ $primary_variant_id }}][]"
+                                                                    accept="image/*" multiple
+                                                                    onchange="previewImages(event, {{ $primary_variant_id }})"
+                                                                    class="form-control">
+                                                            </div>
+
+                                                            <div class="mb-3">
+                                                                <label class="form-label fw-semibold">Select
+                                                                    Video</label>
+                                                                <input type="file"
+                                                                    name="variant_video[{{ $primary_variant_id }}]"
+                                                                    accept="video/*"
+                                                                    onchange="previewVideo(event, {{ $primary_variant_id }})"
+                                                                    class="form-control">
+                                                            </div>
+
+                                                            <hr />
+                                                            <h6 class="fw-bold mb-2">Image Preview</h6>
+                                                            <div id="preview_images_{{ $primary_variant_id }}"
+                                                                class="d-flex flex-wrap gap-2"></div>
+
+                                                            <div class="d-flex flex-wrap gap-2 mt-3">
+                                                                @foreach ($firstVariant->variant_images as $image)
+                                                                    <div class="image-preview-container position-relative"
+                                                                        id="image_{{ $image->id }}">
+                                                                        <img src="{{ url('uploads/products/' . $image->graphic) }}"
+                                                                            width="100" height="100">
+                                                                        <button type="button"
+                                                                            class="btn btn-danger btn-sm delete-media"
+                                                                            data-media-id="{{ $image->id }}"
+                                                                            data-media-type="image"
+                                                                            data-variant-id="{{ $primary_variant_id }}"
+                                                                            style="position: absolute; top: -10px; right: -5px;">
+                                                                            <i class="ri-delete-bin-5-line"></i>
+                                                                        </button>
+
+                                                                        <div class="text-center mt-1">
+                                                                            <div class="form-check form-switch mb-1">
+                                                                                <input
+                                                                                    class="form-check-input image-select-radio"
+                                                                                    type="radio"
+                                                                                    name="frontimage[{{ $primary_variant_id }}]"
+                                                                                    value="{{ $image->id }}"
+                                                                                    data-image-id="{{ $image->id }}"
+                                                                                    data-product-id="{{ $product->id }}"
+                                                                                    data-type="front"
+                                                                                    {{ $image->is_front ? 'checked' : '' }}>
+                                                                                <label
+                                                                                    class="form-check-label small">Front</label>
+                                                                            </div>
+                                                                            <div class="form-check form-switch">
+                                                                                <input
+                                                                                    class="form-check-input image-select-radio"
+                                                                                    type="radio"
+                                                                                    name="backimage[{{ $primary_variant_id }}]"
+                                                                                    value="{{ $image->id }}"
+                                                                                    data-image-id="{{ $image->id }}"
+                                                                                    data-product-id="{{ $product->id }}"
+                                                                                    data-type="back"
+                                                                                    {{ $image->is_back ? 'checked' : '' }}>
+                                                                                <label
+                                                                                    class="form-check-label small">Back</label>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                @endforeach
+                                                            </div>
+
+                                                            <h6 class="fw-bold mt-4 mb-2">Video Preview</h6>
+                                                            <div class="d-flex flex-wrap gap-2">
+                                                                @foreach ($firstVariant->variant_videos as $video)
+                                                                    <div class="video-preview-container position-relative"
+                                                                        id="video_{{ $video->id }}">
+                                                                        <video width="150" height="100" controls>
+                                                                            <source
+                                                                                src="{{ url('uploads/products/' . $video->graphic) }}"
+                                                                                type="video/mp4">
+                                                                        </video>
+                                                                        <button type="button"
+                                                                            class="btn btn-danger btn-sm delete-media"
+                                                                            data-media-id="{{ $video->id }}"
+                                                                            data-media-type="video"
+                                                                            data-variant-id="{{ $primary_variant_id }}"
+                                                                            style="position: absolute; top: -10px; right: -5px;">
+                                                                            <i class="ri-delete-bin-5-line"></i>
+                                                                        </button>
+                                                                    </div>
+                                                                @endforeach
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="mt-4">
+                                                @foreach ($variant_group as $variant)
+                                                    <div class="border p-2 mb-2 rounded bg-light d-flex justify-content-between align-items-center"
+                                                        id="variant_card_{{ $variant->id }}">
+                                                        <div>
+                                                            <p class="mb-1 v_name" id="v_name_{{ $variant->id }}">
+                                                                <strong>Variant Name:</strong>
+                                                                {{ $variant->variant_name ?: 'N/A' }}
+                                                            </p>
+                                                            <p class="mb-1 v_sku" id="v_sku_{{ $variant->id }}">
+                                                                <strong>SKU:</strong> {{ $variant->sku }}
+                                                            </p>
+                                                            <p class="mb-1 v_sale_price"
+                                                                id="v_sale_price_{{ $variant->id }}">
+                                                                <strong>Price:</strong> <span
+                                                                    class="s-price">{{ $variant->selling_price }}</span>
+                                                            </p>
+                                                            <p class="mb-1 v_quantity"
+                                                                id="v_quantity_{{ $variant->id }}">
+                                                                <strong>Qty:</strong> <span
+                                                                    class="a-units">{{ $variant->available_units }}</span>
+                                                            </p>
+                                                        </div>
+                                                        <div>
+                                                            <a href="javascript:void(0)" onclick="open_modal(this)"
+                                                                data-id="{{ $variant->id }}">Edit</a> |
+                                                            <a href="javascript:void(0)" onclick="open_modal(this)"
+                                                                data-id="{{ $variant->id }}">Delete</a>
+                                                        </div>
+                                                    </div>
+                                                @endforeach
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                    <hr class="my-4" />
+                                @endforeach
+                            </div>
+
+
+                            <div class="card-header">
+                                <div class="card-title">
+                                    <h6>SEO Management</h6>
+                                </div>
+                            </div>
+
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col">
+                                        <div class="form-group">
+                                            <label for="meta_title">Meta Title *</label>
+                                            <input type="text" class="form-control" name="meta_title"
+                                                id="meta_title"
+                                                value="{{ isset($product->meta_title) ? $product->meta_title : old('meta_title') }}" />
+                                        </div>
+                                    </div>
+                                    <div class="col">
+                                        <div class="form-group">
+                                            <label for="meta_keywords">Meta Keywords *</label>
+                                            <input type="text" class="form-control" name="meta_keywords"
+                                                id="meta_keywords"
+                                                value="{{ isset($product->meta_keywords) ? $product->meta_keywords : old('meta_keywords') }}" />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col">
+                                        <div class="form-group">
+                                            <label for="meta_description">Meta Description *</label>
+                                            <textarea class="form-control" name="meta_description" id="meta_description" cols="30" rows="3">
+                                    {!! isset($product->meta_description) ? $product->meta_description : old('meta_description') !!}
+                                </textarea>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col">
+                                        <div class="form-group">
+                                            <label for="seo_content">Web Seo Content *</label>
+                                            <textarea class="form-control ck_content" name="seo_content" id="seo_content" cols="30" rows="3">
+                                    {!! isset($product->seo_content) ? $product->seo_content : old('seo_content') !!}
+                                </textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col">
+                                    <div class="form-group mt-2">
+                                        <button type="submit" value="1" name="is_active"
+                                            class="btn btn-primary">Save & Continue</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card-header">
+                                <div class="card-title">
+                                    <h6>Settings</h6>
+                                </div>
+                            </div>
+
+                            <div class="card-body">
+
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" role="switch" id="is_new"
+                                        name="is_new"
+                                        {{ isset($product_details) && $product_details->is_new == 1 ? 'checked' : '' }} />
+                                    <label class="form-check-label" for="status">New In</label>
+                                </div>
+
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" role="switch" id="is_new"
+                                        name="is_new_arrivals"
+                                        {{ isset($product_details) && $product_details->is_new_arrivals == 1 ? 'checked' : '' }} />
+                                    <label class="form-check-label" for="is_new">New Arrivals</label>
+                                </div>
+
+
+
+                                <!-- <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" role="switch" id="status"
+                                    name="is_active" {{ isset($product_details) && $product_details->is_active == 1 ? 'checked' : '' }} />
+                                <label class="form-check-label" for="status">Featured Status</label>
+                            </div> -->
+
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" role="switch" id="is_featured"
+                                        name="is_featured"
+                                        {{ isset($product_details) && $product_details->is_featured == 1 ? 'checked' : '' }} />
+                                    <label class="form-check-label" for="is_featured">Featured Products</label>
+                                </div>
+
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" role="switch" id="status"
+                                        name="trending"
+                                        {{ isset($product_details) && $product_details->trending == 1 ? 'checked' : '' }} />
+                                    <label class="form-check-label" for="status">Trending Products</label>
+                                </div>
+
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" role="switch" id="status"
+                                        name="best_selling"
+                                        {{ isset($product_details) && $product_details->best_selling == 1 ? 'checked' : '' }} />
+                                    <label class="form-check-label" for="status">Best Selling</label>
+                                </div>
+
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" role="switch" id="status"
+                                        name="best_seller"
+                                        {{ isset($product_details) && $product_details->best_seller == 1 ? 'checked' : '' }} />
+                                    <label class="form-check-label" for="status">Best Sellers</label>
+                                </div>
+                            </div>
+
+                            <div class="card-header">
+                                <div class="card-title">
+                                    <h6>Categories</h6>
+                                </div>
+                            </div>
+                            
+                            <!-- Add Code by mohit for multiple category selected -->
+                            <div class="card-body">
+                                @foreach ($categories as $category)
+                                   @if($category->category_type_id !=1)
+                                        {{-- Main Category --}}
+                                        <div class="form-check">
+                                            <input class="form-check-input main-cat-checkbox" type="checkbox"
+                                                id="main_cat_{{ $category->id }}" name="category_id[]"
+                                                value="{{ $category->id }}"
+                                                onchange="toggleSubCategories({{ $category->id }})"
+                                                {{ in_array($category->id, (array) $product_details->category_id) ? 'checked' : '' }}>
+                                            <label class="form-check-label" for="main_cat_{{ $category->id }}">
+                                                {{ $category->name }}
+                                            </label>
+                                        </div>
+
+                                        {{-- Subcategories --}}
+                                        <div id="subcategories_{{ $category->id }}"
+                                            class="ms-3 {{ in_array($category->id, (array) $product_details->category_id) ? '' : 'd-none' }}">
+                                            @foreach ($category->children as $sub)
+                                                <div class="form-check">
+                                                    <input class="form-check-input sub-cat-checkbox" type="checkbox"
+                                                        id="sub_cat_{{ $sub->id }}" name="sub_category_id[]"
+                                                        value="{{ $sub->id }}"
+                                                        onchange="toggleChildCategories({{ $sub->id }})"
+                                                        {{ in_array($sub->id, (array) $product_details->sub_category_id) ? 'checked' : '' }}>
+                                                    <label class="form-check-label" for="sub_cat_{{ $sub->id }}">
+                                                        {{ $sub->name }}
+                                                    </label>
+                                                </div>
+
+                                                {{-- Child Categories --}}
+                                                <div id="childcategories_{{ $sub->id }}"
+                                                    class="ms-4 {{ in_array($sub->id, (array) $product_details->sub_category_id) ? '' : 'd-none' }}">
+                                                    @foreach ($sub->children as $child)
+                                                        <div class="form-check">
+                                                            <input class="form-check-input child-cat-checkbox"
+                                                                type="checkbox" id="child_cat_{{ $child->id }}"
+                                                                name="child_category_id[]" value="{{ $child->id }}"
+                                                                {{ in_array($child->id, (array) $product_details->child_category_id) ? 'checked' : '' }}>
+                                                            <label class="form-check-label"
+                                                                for="child_cat_{{ $child->id }}">
+                                                                {{ $child->name }}
+                                                            </label>
+                                                        </div>
+                                                    @endforeach
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                    @endif
+                                @endforeach
+                            </div>
+
+                            <div class="card-header">
+                                <div class="card-title">
+                                    <h6>Collection</h6>
+                                </div>
+                            </div>
+
+                            <!-- Add Code by mohit for multiple category selected -->
+                            <div class="card-body">
+                                @foreach ($categories as $category)
+                                   @if($category->category_type_id ==1)
+                                        {{-- Main Category --}}
+                                        <div class="form-check">
+                                            <input class="form-check-input main-cat-checkbox" type="checkbox"
+                                                id="main_cat_{{ $category->id }}" name="category_id[]"
+                                                value="{{ $category->id }}"
+                                                onchange="toggleSubCategories({{ $category->id }})"
+                                                {{ in_array($category->id, (array) $product_details->category_id) ? 'checked' : '' }}>
+                                            <label class="form-check-label" for="main_cat_{{ $category->id }}">
+                                                {{ $category->name }}
+                                            </label>
+                                        </div>
+
+                                        {{-- Subcategories --}}
+                                        <div id="subcategories_{{ $category->id }}"
+                                            class="ms-3 {{ in_array($category->id, (array) $product_details->category_id) ? '' : 'd-none' }}">
+                                            @foreach ($category->children as $sub)
+                                                <div class="form-check">
+                                                    <input class="form-check-input sub-cat-checkbox" type="checkbox"
+                                                        id="sub_cat_{{ $sub->id }}" name="sub_category_id[]"
+                                                        value="{{ $sub->id }}"
+                                                        onchange="toggleChildCategories({{ $sub->id }})"
+                                                        {{ in_array($sub->id, (array) $product_details->sub_category_id) ? 'checked' : '' }}>
+                                                    <label class="form-check-label" for="sub_cat_{{ $sub->id }}">
+                                                        {{ $sub->name }}
+                                                    </label>
+                                                </div>
+
+                                                {{-- Child Categories --}}
+                                                <div id="childcategories_{{ $sub->id }}"
+                                                    class="ms-4 {{ in_array($sub->id, (array) $product_details->sub_category_id) ? '' : 'd-none' }}">
+                                                    @foreach ($sub->children as $child)
+                                                        <div class="form-check">
+                                                            <input class="form-check-input child-cat-checkbox"
+                                                                type="checkbox" id="child_cat_{{ $child->id }}"
+                                                                name="child_category_id[]" value="{{ $child->id }}"
+                                                                {{ in_array($child->id, (array) $product_details->child_category_id) ? 'checked' : '' }}>
+                                                            <label class="form-check-label"
+                                                                for="child_cat_{{ $child->id }}">
+                                                                {{ $child->name }}
+                                                            </label>
+                                                        </div>
+                                                    @endforeach
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                    @endif
+                                @endforeach
+                            </div>
+                            <script>
+                                document.addEventListener('DOMContentLoaded', function() {
+                                    // Initialize checked subcategories and child categories based on category id
+                                    document.querySelectorAll('.main-cat-checkbox:checked').forEach(cb => {
+                                        toggleSubCategories(cb.value);
+                                    });
+
+                                    document.querySelectorAll('.sub-cat-checkbox:checked').forEach(cb => {
+                                        toggleChildCategories(cb.value);
+                                    });
+                                });
+
+                                function toggleSubCategories(categoryId) {
+                                    const subDiv = document.getElementById('subcategories_' + categoryId);
+                                    if (document.getElementById('main_cat_' + categoryId).checked) {
+                                        subDiv.classList.remove('d-none');
+                                    } else {
+                                        subDiv.classList.add('d-none');
+                                        subDiv.querySelectorAll('.sub-cat-checkbox').forEach(input => {
+                                            input.checked = false;
+                                            document.getElementById('childcategories_' + input.value)?.classList.add('d-none');
+                                            document.querySelectorAll('#childcategories_' + input.value + ' .child-cat-checkbox').forEach(
+                                                child => {
+                                                    child.checked = false;
+                                                });
+                                        });
+                                    }
+                                }
+
+                                function toggleChildCategories(subCategoryId) {
+                                    const childDiv = document.getElementById('childcategories_' + subCategoryId);
+                                    if (document.getElementById('sub_cat_' + subCategoryId).checked) {
+                                        childDiv.classList.remove('d-none');
+                                    } else {
+                                        childDiv.classList.add('d-none');
+                                        childDiv.querySelectorAll('.child-cat-checkbox').forEach(input => input.checked = false);
+                                    }
+                                }
+                            </script>
+
+                            <!-- End Code by mohit for category -->
+
+
+
+                            <div class="card-header">
+                                <div class="card-title">
+                                    <h6>Tags</h6>
+                                </div>
+                            </div>
+
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col">
+                                        <div class="form-group">
+                                            <label for="tags">Tags <span class="text-danger">*</span></label>
+                                            <select
+                                                class="js-example-placeholder-single js-states form-control product_select2"
+                                                name="product_tags[]" id="product_tags" multiple="multiple" required>
+                                                @forelse ($producttags as $producttag)
+                                                    <option value="{{ $producttag->id }}"
+                                                        {{ in_array($producttag->id, explode(',', $product->product_tags ?? '')) ? 'selected' : '' }}>
+                                                        {{ $producttag->name }}
+                                                    </option>
+                                                @empty
+                                                    <option value="" selected>No Data found</option>
+                                                @endforelse
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+
+
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+@include('admin.prodcuts.edit-product-variant')
+@endsection
+
+
+@push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+<script>
+    const attributes = @json($attributes);
+    const formattedAttributes = jQuery.map(attributes, function(val, index) {
+        return {
+            id: val.id,
+            text: val.name
+        };
+    })
+    $('#attributeName').select2({
+        placeholder: 'Select an option',
+        width: "100%",
+        tags: true,
+        tokenSeparators: [','],
+        data: formattedAttributes,
+        dropdownParent: $('#addAttributeModal')
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const attributes =
+            @json($attributes); // Assuming attributes are passed as a JSON-encoded array from the backend
+
+        document.getElementById('add-attribute-button').addEventListener('click', addAttributePair);
+        document.getElementById('add-new-attribute-button').addEventListener('click', () => {
+            $('#addAttributeModal').modal('show');
+        });
+        document.getElementById('saveAttributeButton').addEventListener('click', saveAttributePair);
+
+        function addAttributePair() {
+            const attributePairContainer = document.createElement('div');
+            attributePairContainer.className = 'row mb-3 attribute-pair';
+           
+            $.get('/admin/product/get-attributes', function(attributes) {
+
+                    const attributeCol = document.createElement('div');
+                    attributeCol.className = 'col-4';
+                    attributeCol.innerHTML = `
+                    <div class="p-0">
+                        <div class="mb-3">
+                            <label class="form-label">Attribute</label>
+                            <select name="attribute_ids[]" class="form-control attribute-select">
+                                <option value="">Select Attribute</option>
+                                ${attributes.map(attribute => `<option value="${attribute.id}">${ucfirst(attribute.name)}</option>`).join('')}
+                            </select>
+                        </div>
+                    </div>`;
+
+                    const valueCol = document.createElement('div');
+                    valueCol.className = 'col-4';
+                    valueCol.innerHTML = `
+                    <div class="p-0">
+                        <div class="mb-3">
+                            <label class="form-label">Attribute Value</label>
+                            <select class="form-control value-select">
+                                <option value="">Select Attribute Value</option>
+                            </select>
+                        </div>
+                    </div>`;
+
+                    const removeCol = document.createElement('div');
+                    removeCol.className = 'col-4 d-flex align-items-center';
+                    removeCol.innerHTML = `
+                    <div class="p-0">
+                        <button class="btn btn-danger remove-attribute-button" type="button">Remove</button>
+                    </div>`;
+
+                    removeCol.querySelector('.remove-attribute-button').addEventListener('click', function() {
+                        attributePairContainer.remove();
+                    });
+
+                    attributePairContainer.appendChild(attributeCol);
+                    attributePairContainer.appendChild(valueCol);
+                    attributePairContainer.appendChild(removeCol);
+
+                    document.getElementById('attribute-pairs-container').appendChild(attributePairContainer);
+
+                    const attributeSelect = attributeCol.querySelector('.attribute-select');
+                    const valueSelect = valueCol.querySelector('.value-select');
+
+                    attributeSelect.addEventListener('change', function() {
+                        const selectedId = this.value;
+
+                        // Dynamically update name of value select
+                        valueSelect.name = `attribute_value_ids[${selectedId}][]`;
+
+                        // ✅ Use existing method to fetch attribute values from backend
+                        getAttributeValues(this);
+
+                        // Optional: refresh attribute options
+                        refreshAttributeSelectOptions(this);
+                    });
+            });
+        }
+
+
+        // function saveAttributePair() {
+        //     const attributeName = document.getElementById('attributeName').value.trim();
+        //     const attributeValue = document.getElementById('attributeValue').value.trim();
+
+        //     if (attributeName && attributeValue) {
+        //         const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+        //         fetch('{{ route('admin-product-save-attribute') }}', {
+        //                 method: 'POST',
+        //                 headers: {
+        //                     'Content-Type': 'application/json',
+        //                     'X-CSRF-TOKEN': csrfToken
+        //                 },
+        //                 body: JSON.stringify({
+        //                     attributeName,
+        //                     attributeValue
+        //                 })
+        //             })
+        //             .then(response => response.json())
+        //             .then(data => {
+        //                 if (data.attribute_id && data.attribute_name) {
+        //                     attributes.push({
+        //                         id: data.attribute_id,
+        //                         name: data.attribute_name
+        //                     });
+
+        //                     // Clear the modal fields
+        //                     document.getElementById('attributeName').value = '';
+        //                     document.getElementById('attributeValue').value = '';
+
+        //                     // Close the modal
+        //                     $('#addAttributeModal').modal('hide');
+
+        //                     // Refresh the dropdowns with the new attribute
+        //                     document.querySelectorAll('.attribute-select').forEach(select => {
+        //                         const newOption = document.createElement('option');
+        //                         newOption.value = data.attribute_id;
+        //                         newOption.text = ucfirst(data.attribute_name);
+        //                         select.appendChild(newOption);
+        //                     });
+        //                     show_message(data.msg, 'success');
+        //                 } else {
+        //                     //this is when added only values of the attribute
+        //                     document.getElementById('attributeName').value = '';
+        //                     document.getElementById('attributeValue').value = '';
+        //                     $('#addAttributeModal').modal('hide');
+        //                     show_message(data.msg, 'success');
+        //                 }
+        //             })
+        //             .catch(error => {
+        //                 console.error('Error:', error);
+        //             });
+        //     }
+        // }
+        function saveAttributePair() {
+            const attributeId = document.getElementById('attributeName').value.trim();
+            const rawValueInput = document.getElementById('attributeValue').value.trim();
+
+            // Split comma-separated values and remove empty/extra whitespace
+            const valuesArray = rawValueInput.split(',')
+                .map(val => val.trim())
+                .filter(val => val.length > 0);
+
+            if (attributeId && valuesArray.length > 0) {
+                const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+                fetch('{{ route('admin-product-save-attribute') }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': csrfToken
+                        },
+                        body: JSON.stringify({
+                            attributeId,
+                            attributeValues: valuesArray
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            document.getElementById('attributeValue').value = '';
+                            $('#addAttributeModal').modal('hide');
+
+                            show_message(data.msg, 'success');
+                        } else {
+                            show_message('Something went wrong', 'error');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                    });
+            } else {
+                show_message('Please enter at least one value.', 'error');
+            }
+        }
+
+        document.getElementById('attributeName').addEventListener('change', function() {
+            const attributeId = this.value;
+            if (!attributeId) return;
+
+            // Fetch attribute values from backend
+            fetch(`/get-attribute-values/${attributeId}`)
+                .then(res => res.json())
+                .then(values => {
+                    const valueSelect = document.getElementById('attributeValue');
+                    valueSelect.innerHTML = '';
+                    values.forEach(val => {
+                        const opt = document.createElement('option');
+                        opt.value = val.id;
+                        opt.textContent = val.value_name;
+                        valueSelect.appendChild(opt);
+                    });
+                });
+        });
+
+        function ucfirst(str) {
+            return str.charAt(0).toUpperCase() + str.slice(1);
+        }
+
+    });
+
+    window.getAttributeValues = function(selectElement) {
+        const attributeId = selectElement.value;
+        const valueSelect = selectElement.closest('.attribute-pair').querySelector('.value-select');
+
+        if (attributeId) {
+            fetch(`{{ route('admin-product-attribute-values') }}?attribute_id=${attributeId}`)
+                .then(response => response.json())
+                .then(data => {
+                    const attributeValues = data.attributeValues;
+                    let options = '<option value="">Select Attribute Value</option>';
+                    attributeValues.forEach(function(value) {
+                        options += `<option value="${value.id}">${value.name}</option>`;
+                    });
+                    valueSelect.innerHTML = options;
+                })
+                .catch(error => {
+                    console.error('Error fetching attribute values:', error);
+                });
+        } else {
+            valueSelect.innerHTML = '<option value="">Select Attribute Value</option>';
+        }
+    };
+</script>
+<script>
+    $('#finalProductForm').on('submit', function(e) {
+        let desc = CKEDITOR.instances['description'].getData().trim();
+        if (desc === '') {
+            $('#p-description').text('Please enter product description');
+            CKEDITOR.instances['description'].focus();
+
+            $('html, body').animate({
+                scrollTop: $('#description').closest('.form-group').offset().top - 100
+            }, 500);
+
+            e.preventDefault();
+            return false;
+        } else {
+            $('#p-description').text('');
+        }
+
+        let sp = CKEDITOR.instances['specification'].getData().trim();
+        if (sp === '') {
+            $('#p-specification').text('Please enter product specification');
+            CKEDITOR.instances['specification'].focus();
+
+            $('html, body').animate({
+                scrollTop: $('#specification').closest('.form-group').offset().top - 100
+            }, 500);
+
+            e.preventDefault();
+            return false;
+        } else {
+            $('#p-specification').text('');
+        }
+
+    });
+</script>
+<script>
+    function setMainProduct(variant_id, product_id) {
+        $.ajax({
+            url: "{{ url('admin/product/set-main-variant') }}",
+            type: "POST",
+            data: {
+                variant_id: variant_id,
+                product_id: product_id,
+                _token: "{{ csrf_token() }}"
+            },
+            dataType: "json",
+            success: function(response) {
+                if (response.success) {
+                    toastr.success("Main product variant updated successfully!");
+                    // Optionally update UI
+                } else {
+                    toastr.error("Failed to update main product variant.");
+                }
+            },
+            error: function(xhr) {
+                toastr.error("Something went wrong.");
+            }
+        });
+    }
+
+
+    function refreshValueSelectOptions() {
+        let selectedValues = [];
+        $('.value-select').each(function() {
+            const selected = $(this).val();
+            if (selected) {
+                selectedValues.push(selected);
+            }
+        });
+
+        $('.value-select').each(function() {
+            const currentSelect = $(this);
+            const currentSelected = currentSelect.val();
+            currentSelect.find('option').each(function() {
+                const optionValue = $(this).val();
+                if (optionValue === "") {
+                    $(this).prop('disabled', false);
+                } else if (optionValue === currentSelected) {
+                    $(this).prop('disabled', false);
+                } else if (selectedValues.includes(optionValue)) {
+                    $(this).prop('disabled', true);
+                } else {
+                    $(this).prop('disabled', false);
+                }
+            });
+        });
+    }
+
+
+    $(document).ready(function() {
+        refreshValueSelectOptions();
+        var seenClasses = {};
+        $("div[class*='removeeditoption']").each(function() {
+            var classList = $(this).attr("class").split(/\s+/);
+            var match = classList.find(cls => cls.startsWith("removeeditoption"));
+            if (match) {
+                if (seenClasses[match]) {
+                    $(this).remove();
+                } else {
+                    seenClasses[match] = true;
+                }
+            }
+        });
+
+        $('#maxProduct, #minProduct').on('input', function() {
+            UpdateProductVariantLimit();
+        });
+
+        function UpdateProductVariantLimit() {
+            let max_selling_units = $('#maxProduct').val();
+            let min_selling_units = $('#minProduct').val();
+            let product_id = '{{ $product_details->id }}';
+
+            $.ajax({
+                type: "POST",
+                url: "{{ url('admin/product/update-product-variant-limit/') }}",
+                data: {
+                    max_selling_units: max_selling_units,
+                    min_selling_units: min_selling_units,
+                    product_id: product_id, // IMPORTANT
+                    _token: '{{ csrf_token() }}'
+                },
+                dataType: "json",
+                success: function(response) {
+                    if (response.success == 1) {
+                        console.log('Product limits updated successfully.');
+                    } else {
+                        console.error(response.error);
+                    }
+                }
+            });
+
+        }
+
+        $('.image-select-radio').on('change', function() {
+            let imageId = $(this).data('image-id');
+            let productId = $(this).data('product-id');
+            let type = $(this).data('type'); // front or back
+
+            $.ajax({
+                url: '{{ url('admin/product/update-product-image') }}',
+                method: 'POST',
+                data: {
+                    _token: $('meta[name="csrf-token"]').attr('content'),
+                    product_id: productId,
+                    image_id: imageId,
+                    type: type
+                },
+                success: function(response) {
+                    if (response.status === 'success') {
+                        console.log(type + ' image updated successfully!');
+                    } else {
+                        alert('Update failed: ' + response.message);
+                    }
+                },
+                error: function() {
+                    alert('Something went wrong while updating the image.');
+                }
+            });
+        });
+    });
+
+    $(document).on('click', '.value-select', function() {
+        refreshValueSelectOptions();
+    });
+
+    function removeCustomBox(cls) {
+        $('.' + cls).remove();
+    }
+
+    $(document).ready(function() {
+        // Handle delete button click for images and videos
+        $('.delete-media').on('click', function() {
+            var mediaId = $(this).data('media-id');
+            var mediaType = $(this).data('media-type');
+            var variantId = $(this).data('variant-id');
+
+            // Confirm before deletion
+            if (confirm('Are you sure you want to delete this ' + mediaType + '?')) {
+                $.ajax({
+                    url: "{{ route('admin-product-delete-media') }}", // Define your route for deleting media
+                    method: 'POST',
+                    data: {
+                        _token: $('meta[name="csrf-token"]').attr('content'), // CSRF token
+                        media_type: mediaType,
+                        media_id: mediaId,
+                        variant_id: variantId
+                    },
+                    success: function(response) {
+                        if (response.status === 'success') {
+                            // Remove the media from the DOM
+                            $('#' + mediaType + '_' + mediaId).remove();
+                            $('#file-' + mediaId).remove()
+                        } else {
+                            alert('Error: Unable to delete media');
+                        }
+                    },
+                    error: function() {
+                        alert('Error: Something went wrong');
+                    }
+                });
+            }
+        });
+    });
+
+
+
+    $('.product_select2').select2();
+
+    CKEDITOR.replace('specification', {
+        filebrowserUploadUrl: '<?php echo URL()->to('base/uploder'); ?>',
+        enterMode: CKEDITOR.ENTER_BR
+    });
+
+    CKEDITOR.replace('description', {
+        filebrowserUploadUrl: '<?php echo URL()->to('base/uploder'); ?>',
+        enterMode: CKEDITOR.ENTER_BR
+    });
+
+    CKEDITOR.replace('product_details', {
+        filebrowserUploadUrl: '<?php echo URL()->to('base/uploder'); ?>',
+        enterMode: CKEDITOR.ENTER_BR
+    });
+
+    CKEDITOR.replace('others', {
+        filebrowserUploadUrl: '<?php echo URL()->to('base/uploder'); ?>',
+        enterMode: CKEDITOR.ENTER_BR
+    });
+
+    CKEDITOR.replace('wash_care', {
+        filebrowserUploadUrl: '<?php echo URL()->to('base/uploder'); ?>',
+        enterMode: CKEDITOR.ENTER_BR
+    });
+
+    CKEDITOR.replace('seo_content', {
+        filebrowserUploadUrl: '<?php echo URL()->to('base/uploder'); ?>',
+        enterMode: CKEDITOR.ENTER_BR
+    });
+
+
+
+    // function previewImages(event, variantId) {
+    //     const files = event.target.files;
+    //     const container = document.getElementById('preview_images_' + variantId);
+    //     const thumbs = document.getElementById('thumb_images_' + variantId);
+    //     container.innerHTML = '';
+    //     thumbs.innerHTML = '';
+
+    //     Array.from(files).forEach(file => {
+    //         const reader = new FileReader();
+    //         reader.onload = function(e) {
+    //             const img = document.createElement('img');
+    //             img.src = e.target.result;
+    //             img.className = 'rounded border';
+    //             img.style.width = '100px';
+    //             img.style.height = '100px';
+    //             img.style.objectFit = 'cover';
+    //             container.appendChild(img);
+
+    //             // Add to main preview below button as well
+    //             const thumb = img.cloneNode(true);
+    //             thumbs.appendChild(thumb);
+    //         };
+    //         reader.readAsDataURL(file);
+    //     });
+    // }
+
+    // // function previewImages(event, variantId) {
+    // //     const files = event.target.files;
+    // //     const container = document.getElementById('preview_images_' + variantId);
+    // //     const thumbs = document.getElementById('thumb_images_' + variantId);
+    // //     container.innerHTML = '';
+    // //     if (thumbs) thumbs.innerHTML = '';
+
+    // //     Array.from(files).forEach((file, index) => {
+    // //         const reader = new FileReader();
+    // //         reader.onload = function(e) {
+    // //             const wrapper = document.createElement('div');
+    // //             wrapper.className = 'image-preview-container';
+    // //             wrapper.style.position = 'relative';
+    // //             wrapper.style.width = '130px';
+    // //             wrapper.style.marginRight = '10px';
+    // //             wrapper.style.marginBottom = '10px';
+
+    // //             const img = document.createElement('img');
+    // //             img.src = e.target.result;
+    // //             img.className = 'rounded border mb-1';
+    // //             img.style.width = '100px';
+    // //             img.style.height = '100px';
+    // //             img.style.objectFit = 'cover';
+    // //             wrapper.appendChild(img);
+
+    // //             // FRONT switch
+    // //             const frontSwitchWrapper = document.createElement('div');
+    // //             frontSwitchWrapper.className = 'form-check form-switch d-flex align-items-center justify-content-center mb-1 px-0';
+    // //             frontSwitchWrapper.innerHTML = `
+    // //                 <input class="form-check-input" type="radio"
+    // //                     name="front_image[]" 
+    // //                     value="${index}" id="frontSwitch_temp_${variantId}_${index}">
+    // //                 <label class="form-check-label small ms-2" for="frontSwitch_temp_${variantId}_${index}">
+    // //                     Front Image
+    // //                 </label>
+    // //             `;
+    // //             // name="front_image[${variantId}]"
+    // //             wrapper.appendChild(frontSwitchWrapper);
+
+    // //             // BACK switch
+    // //             const backSwitchWrapper = document.createElement('div');
+    // //             backSwitchWrapper.className = 'form-check form-switch d-flex align-items-center justify-content-center px-0';
+    // //             backSwitchWrapper.innerHTML = `
+    // //                 <input class="form-check-input" type="radio"
+    // //                     name="back_image[]"
+    // //                     value="${index}" id="backSwitch_temp_${variantId}_${index}">
+    // //                 <label class="form-check-label small ms-2" for="backSwitch_temp_${variantId}_${index}">
+    // //                     Back Image
+    // //                 </label>
+    // //             `;
+    // //             wrapper.appendChild(backSwitchWrapper);
+
+    // //             container.appendChild(wrapper);
+
+    // //             // Add thumb preview if container exists
+    // //             if (thumbs) {
+    // //                 const thumb = img.cloneNode(true);
+    // //                 thumbs.appendChild(thumb);
+    // //             }
+    // //         };
+    // //         reader.readAsDataURL(file);
+    // //     });
+    // // }
+
+
+    // function previewVideo(event, variantId) {
+    //     const file = event.target.files[0];
+    //     const preview = document.getElementById('preview_video_' + variantId);
+    //     const thumb = document.getElementById('thumb_video_' + variantId);
+    //     preview.innerHTML = '';
+    //     thumb.innerHTML = '';
+
+    //     const reader = new FileReader();
+    //     reader.onload = function(e) {
+    //         const video = document.createElement('video');
+    //         video.src = e.target.result;
+    //         video.controls = true;
+    //         video.style.width = '100%';
+    //         preview.appendChild(video);
+
+    //         // Small version below button
+    //         const mini = video.cloneNode(true);
+    //         mini.style.width = '100%';
+    //         mini.style.height = '150px';
+    //         thumb.appendChild(mini);
+    //     };
+    //     reader.readAsDataURL(file);
+    // }
+</script>
+
+<script>
+    function previewImages(event, variantId) {
+        const files = event.target.files;
+        const previewContainer = document.getElementById('preview_images_' + variantId);
+        previewContainer.innerHTML = ''; // clear old previews
+
+        Array.from(files).forEach(file => {
+            if (!file.type.startsWith('image/')) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = document.createElement('img');
+                img.src = e.target.result;
+                img.style.maxWidth = '100px';
+                img.classList.add('me-2');
+                previewContainer.appendChild(img);
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+
+    function previewVideo(event, variantId) {
+        const files = event.target.files;
+        const previewContainer = document.getElementById('preview_images_' + variantId);
+
+        // Remove old video previews from this section
+        const oldVideos = previewContainer.querySelectorAll('video');
+        oldVideos.forEach(el => el.remove());
+
+        Array.from(files).forEach(file => {
+            if (!file.type.startsWith('video/')) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const video = document.createElement('video');
+                video.controls = true;
+                video.width = 150;
+                video.height = 100;
+
+                const source = document.createElement('source');
+                source.src = e.target.result;
+                source.type = file.type;
+                video.appendChild(source);
+
+                previewContainer.appendChild(video);
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+
+    function getRelatedSubCategories(category_id) {
+        var category_ids = $('#category_id').val();
+        $.ajax({
+            type: "GET",
+            url: "{{ route('admin-product-ajax-getrelatedsubcategories') }}",
+            data: {
+                category_ids: category_ids
+            },
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            },
+            success: function(response) {
+                var html = '<option value="">Select Subcategory</option>';
+              // console.log(response);
+
+                if (response.success) {
+
+                    $.each(response.subcategories, function(index, subcat) {
+                        html += '<option value="' + subcat.id + '">' + subcat.name + '</option>';
+                    });
+                } else {
+                    html += '<option value="">No Subcategories Available</option>';
+                }
+
+                $("#subcate_id").html(html);
+                $('#subcate_id').select2({
+                    placeholder: "Choose Sub Category",
+                    width: "100%"
+                });
+            }
+        });
+    }
+
+    function getchildcategory() {
+        var subctg_ids = $('#subcate_id').val();
+        $.ajax({
+            type: "GET",
+            url: "{{ route('admin-product-ajax-getchildcategory') }}",
+            data: {
+                subctgids: subctg_ids
+            },
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            },
+            success: function(response) {
+
+                var html = '<option value="">Select Child Category</option>';
+                if (response.success) {
+                    $.each(response.childcat, function(index, item) {
+                        html += '<option value="' + item.id + '">' + item.name + '</option>';
+                    });
+                }else {
+                    html += '<option value="">No Child Categories Available</option>';
+                }
+
+                $("#childcate_id").html(html);
+                $('#childcate_id').select2({
+                    placeholder: "Choose Child Category",
+                    width: "100%"
+                });
+            }
+        });
+    }
+
+</script>
+@endpush

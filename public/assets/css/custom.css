@@ -1,0 +1,172 @@
+.tagify {
+    --tags-disabled-bg: #F1F1F1;
+    --tags-border-color: #313335 !important;
+    --tags-hover-border-color: #CCC;
+    --tags-focus-border-color: #313335 !important;
+    --tag-border-radius: 3px;
+    --tag-bg: #E5E5E5;
+    --tag-hover: #D3E2E2;
+    --tag-text-color: black;
+    --tag-text-color--edit: black;
+    --tag-pad: 0.3em 0.5em;
+    --tag-inset-shadow-size: 1.1em;
+    --tag-invalid-color: #D39494;
+    --tag-invalid-bg: rgba(211, 148, 148, 0.5);
+    --tag-remove-bg: rgba(211, 148, 148, 0.3);
+    --tag-remove-btn-color: black;
+    --tag-remove-btn-bg: none;
+    --tag-remove-btn-bg--hover: #c77777;
+    --input-color: inherit;
+    --tag--min-width: 1ch;
+    --tag--max-width: auto;
+    --tag-hide-transition: 0.3s;
+    --placeholder-color: #616364 !important;
+    --placeholder-color-focus: #616364 !important;
+    --loader-size: .8em;
+    --readonly-striped: 1;
+    display: inline-flex;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    border: 1px solid var(--tags-border-color);
+    padding: 0;
+    line-height: 0;
+    cursor: text;
+    outline: 0;
+    position: relative;
+    box-sizing: border-box;
+    transition: .1s
+}
+
+.showViewIcon{display: flex; grid-template-columns: auto 1fr;}
+.showViewIcon i{display: none}
+.showViewIcon:hover i{display: block;}
+.showViewIcon abbr{padding-right:10px}
+
+#notification-count {
+    position: absolute;
+    top: 10px;
+    right: 0px;
+    background-color: red;
+    color: white;
+    padding: 3px 7px;
+    border-radius: 50%;
+}
+
+.header-notification-dropdown {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.dropdown-item {
+    cursor: pointer;
+}
+
+.dropdown-item:hover {
+    background-color: #f0f0f0;
+}
+
+/* Add product tab*/
+body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f1f2f6;
+      margin: 0;
+      padding: 0;
+    }
+
+    .tab-container {
+      max-width: 1100px;
+      margin: 40px auto;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+    }
+
+    .tab-header {
+      display: flex;
+      border-bottom: 1px solid #ccc;
+    }
+
+    .tab-header button {
+      flex: 1;
+      padding: 14px;
+      border: none;
+      background: #f7f7f7;
+      cursor: pointer;
+      font-size: 16px;
+      transition: 0.3s;
+    }
+
+    .tab-header button:hover {
+      background: #e0e0e0;
+    }
+
+    .tab-header button.active {
+      background: #fff;
+      border-bottom: 3px solid #007BFF;
+      font-weight: bold;
+      color: #007BFF;
+    }
+
+    .tab-body {
+      padding: 20px;
+      display: none;
+    }
+
+    .tab-body.active {
+      display: block;
+    }
+
+    ul {
+      padding-left: 20px;
+    }
+
+    label{
+      font-weight: 400;
+      font-size: 14px;
+      color: #1b1b1b;
+      display: block;
+      margin-bottom: 4px;
+    }
+
+
+    /* input[type="checkbox"] ,input[type="radio"] {
+    appearance: none;
+    -webkit-appearance: none;
+    background-color: #fff;
+    border: 2px solid rgb(var(--primary-rgb));
+    width: 18px;
+    height: 18px;
+    border-radius: 4px;
+    cursor: pointer;
+    position: relative;
+    margin-right: 6px;
+    vertical-align: middle;
+} */
+
+
+.tab-pane {
+    display: none;
+}
+
+.tab-pane.active {
+    display: block;
+}
+#formTabs .nav-item {
+    width: 250px;
+    text-align: center;
+}
+
+.error {
+    color: red;
+    font-size: 0.875em;
+}
+#formTabs .nav-link.active {
+    background-color:rgb(var(--primary-rgb)) !important;
+    color: #fff;
+    font-weight: bold;
+    border-radius: 5px;
+}
+
+.mr-5px{
+  margin-right: 5px;
+}
