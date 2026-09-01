@@ -1043,12 +1043,9 @@ class OrderController extends Controller
     public function generateNewInvoice(Request $request,$id)
     {   
         $order = Order::where('orders.id', $id)->leftJoin('users', 'users.id', 'orders.user_id')->select('orders.*', 'users.name as user_name', 'users.email as user_email')->first();
-       
         $checkout_data = OrderItem::with(['product', 'itemTax'])->where('order_id', $id)->get();
-        $GSTIN = config('Site.GSTIN');
-        $GSTIN = empty($GSTIN) ? $GSTIN : Setting::where('key','Site.GSTIN')->value('value');
+        $GSTIN = !empty(config('Site.GSTIN')) ? config('Site.GSTIN') : Setting::where('key','Site.GSTIN')->value('value');
         $ordertype = 'order';
-        //echo $GSTIN;die;
         $currency = Currency::where('currency_code', $order->currency_code)->value('symbol');
         $supplySetting = InvoiceSetting::with(['country', 'state', 'city'])
             ->where('is_active', 1)

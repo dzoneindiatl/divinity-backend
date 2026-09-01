@@ -49,43 +49,20 @@ class MainProductController extends Controller
 
 
    public function addNewProduct(Request $request, $token = null)
-{
-    info('STEP 1', [
-        'token' => $token,
-    ]);
-
-    $product = [];
-
-    if ($token) {
-
-        info('STEP 2 - Before decrypt');
-
-        $id = decrypt($token);
-
-        info('STEP 3 - After decrypt', [
-            'id' => $id,
-        ]);
-
-        $product = Product::findOrFail($id);
-
-        info('STEP 4 - After product', [
-            'product_id' => $product->id,
-        ]);
+    {
+        $product = [];
+        if ($token) {
+            $id = decrypt($token);
+            $product = Product::findOrFail($id);
+        }
+        $categories = Category::where('is_deleted', 0)
+            ->whereNull('parent_id')
+            ->get();
+        return view(
+            'admin.prodcuts.add-new-product',
+            compact('categories', 'product')
+        );
     }
-
-    info('STEP 5 - Before categories');
-
-    $categories = Category::where('is_deleted', 0)
-        ->whereNull('parent_id')
-        ->get();
-
-    info('STEP 6 - After categories');
-
-    return view(
-        'admin.prodcuts.add-new-product',
-        compact('categories', 'product')
-    );
-}
 
     /**
      * Methode :- POST
